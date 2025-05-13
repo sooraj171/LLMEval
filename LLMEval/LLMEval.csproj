@@ -4,6 +4,21 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+
+    <!-- NuGet package metadata -->
+    <PackageId>STAF.LLMEval</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Sooraj Ramachandran</Authors>
+    <Company>Sooraj Ramachandran</Company>
+    <Product>LLMEval</Product>
+    <Description>.NET library for evaluating LLM responses using Gemini, OpenAI, and Ollama providers.</Description>
+    <PackageTags>LLM;AI;Evaluation;Gemini;OpenAI;Ollama;dotnet</PackageTags>
+    <RepositoryUrl>https://github.com/sooraj171</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/sooraj171/LLMEval</PackageProjectUrl>
+    <Copyright>Copyright © Sooraj Ramachandran 2025</Copyright>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
 </Project>
+

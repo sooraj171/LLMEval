@@ -6,7 +6,7 @@ This document provides a guide on how to use the AI Response Evaluation Library.
 
 ### Installation
 
-1.  **Add NuGet Package:** In your C# project, add a reference to the `YourLibraryName` NuGet package. You can do this using the NuGet Package Manager in Visual Studio or by using the .NET CLI:
+1.  **Add NuGet Package:** In your C# project, add a reference to the `STAF.LLMEval` NuGet package. You can do this using the NuGet Package Manager in Visual Studio or by using the .NET CLI:
 
     ```bash
     dotnet add package STAF.LLMEval

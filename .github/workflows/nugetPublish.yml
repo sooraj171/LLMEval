@@ -28,4 +28,13 @@ jobs:
         run: dir nupkg
       
       - name: Publish to NuGet
-        run: dotnet nuget push ./nupkg/STAF.LLMEval.*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        shell: pwsh
+        run: |
+          $packagePath = Get-ChildItem -Path "./nupkg" -Filter "STAF.LLMEval.*.nupkg" | Select-Object -First 1 -ExpandProperty FullName
+          if ($packagePath) {
+            Write-Host "Publishing package: $packagePath"
+            dotnet nuget push $packagePath --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+          } else {
+            Write-Host "No package found matching pattern STAF.LLMEval.*.nupkg in ./nupkg directory"
+            exit 1
+          }

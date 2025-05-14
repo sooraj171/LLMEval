@@ -22,18 +22,10 @@ jobs:
         run: dotnet build LLMEval/LLMEval.csproj --configuration Release --no-restore
       
       - name: Pack
-        run: dotnet pack LLMEval/LLMEval.csproj --configuration Release --no-build -o nupkg
+        run: dotnet pack LLMEval/LLMEval.csproj --configuration Release --no-build --output ./nupkg
       
-      - name: List directories to debug
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Directory listing of root:"
-          dir
-          echo "Directory listing of nupkg folder:"
-          dir nupkg || echo "nupkg directory not found"
-          echo "Directory listing of LLMEval/bin/Release:"
-          dir LLMEval/bin/Release || echo "LLMEval/bin/Release directory not found"
+      - name: List generated packages
+        run: dir nupkg
       
       - name: Publish to NuGet
-        run: dotnet nuget push "$(pwd)/nupkg/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push ./nupkg/STAF.LLMEval.*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

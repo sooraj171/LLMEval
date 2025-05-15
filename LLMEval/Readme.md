@@ -79,10 +79,8 @@ This class contains static methods to parse the responses from the LLM judges (O
 2.  **Instantiate `AdvancedEvaluationService`:** Create an instance of the evaluation service, providing instances of the provider implementations. It's recommended to use Dependency Injection for managing these dependencies in larger applications.
 
     ```csharp
-    var ollamaProvider = new OllamaProvider(new HttpClient());
-    var openAiProvider = new OpenAIProvider(new HttpClient());
-    var geminiProvider = new GeminiProvider(new HttpClient());
-    var evaluationService = new AdvancedEvaluationService(ollamaProvider, openAiProvider, geminiProvider);
+            IAiProviderFactory providerFactory = new AiProviderFactory();
+            IEvaluationService _evalService = new AdvancedEvaluationService(providerFactory);
     ```
 
 3.  **Call `EvaluateAsync`:** Call the `EvaluateAsync` method of the `AdvancedEvaluationService` with your `EvaluationRequest` object. This will return an `EvaluationResult`.

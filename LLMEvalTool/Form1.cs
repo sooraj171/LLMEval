@@ -1,17 +1,20 @@
 using LLMEval;
+using System.Data.Common;
 
 namespace LLMEvalTool
 {
     public partial class Form1 : Form
     {
-        private readonly AdvancedEvaluationService _evalService;
+        private readonly IEvaluationService _evalService;
         public Form1()
         {
             InitializeComponent();
-            _evalService = new AdvancedEvaluationService(
-                new OllamaProvider(),
-                new OpenAIProvider(),
-                new GeminiProvider() );
+           // 1.Create an instance of the AiProviderFactory
+            IAiProviderFactory providerFactory = new AiProviderFactory();
+
+            // 2. Create an instance of AdvancedEvaluationService, passing the factory and HttpClient
+             _evalService = new AdvancedEvaluationService(providerFactory);
+
         }
 
         private async void button1_Click(object sender, EventArgs e)
@@ -49,7 +52,7 @@ namespace LLMEvalTool
                 IsReferenceDoc = false
             };
 
-            var result = await _evalService.EvaluateAsync(requestOllama);
+            var result = await _evalService.EvaluateAsync(requestGemini);
 
 
         }

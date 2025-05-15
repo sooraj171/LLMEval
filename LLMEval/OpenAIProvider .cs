@@ -9,9 +9,9 @@ namespace LLMEval
         private readonly HttpClient _httpClient;
         private const string DefaultModel = "gpt-3.5-turbo";
 
-        public OpenAIProvider()
+        public OpenAIProvider(HttpClient httpClient)
         {
-            _httpClient = new HttpClient();
+            _httpClient = httpClient ?? new HttpClient();
         }
 
         public async Task<string> GetResponseAsync(string endpoint, string question, Dictionary<string, string> configuration)

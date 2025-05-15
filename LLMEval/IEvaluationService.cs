@@ -8,25 +8,25 @@ namespace LLMEval
 
     public class AdvancedEvaluationService : IEvaluationService
     {
+        private readonly IAiProviderFactory _providerFactory;
+        private readonly HttpClient _httpClient;
         private readonly Dictionary<ProviderType, IAiProvider> _providers;
 
-        public AdvancedEvaluationService(OllamaProvider ollamaProvider, OpenAIProvider openAIProvider, GeminiProvider geminiProvider)
+        public AdvancedEvaluationService(IAiProviderFactory providerFactory)
         {
-            _providers = new Dictionary<ProviderType, IAiProvider>
-            {
-                { ProviderType.Ollama, ollamaProvider },
-                { ProviderType.OpenAI, openAIProvider },
-                { ProviderType.Gemini, geminiProvider }
-            };
+            _providerFactory = providerFactory;
+            _httpClient = new HttpClient();
         }
 
         public async Task<EvaluationResult> EvaluateAsync(EvaluationRequest request)
         {
             try
             {
+                IAiProvider provider = _providerFactory.CreateProvider(request.ProviderType, _httpClient);
+
                 if (request.EvaluationType == EvaluationType.LLMAsJudge)
                 {
-                    return await EvaluateWithLLMAsync(request);
+                    return await EvaluateWithLLMAsync(provider,request);
                 }
                 else // Default to direct comparison logic
                 {
@@ -44,7 +44,7 @@ namespace LLMEval
             }
         }
 
-        private async Task<EvaluationResult> EvaluateWithLLMAsync(EvaluationRequest request)
+        private async Task<EvaluationResult> EvaluateWithLLMAsync(IAiProvider _provider, EvaluationRequest request)
         {
             string prompt = string.Empty;
 
@@ -62,17 +62,17 @@ namespace LLMEval
                 //    Based on the provided Reference Document ONLY, does the AI Response contain information that is present in or directly supported by the Reference Document? Evaluate the factual consistency.
                 //    Provide a score (0-1). A score of 1 indicates that all factual claims in the AI Response are directly supported by the Reference Document. A score of 0 indicates that the AI Response contains information not found in the Reference Document. Provide a brief reason for the score.";
             }
-            else
-            {
-                prompt = $"Q: {request.Question}\nA: {request.AiResponse}\nE: {request.GoldenOutput}\nEvaluate if A is a valid and relevant answer to Q. Score (0-1) & Reason:";
-            }
+            //else
+            //{
+            //    prompt = $"Q: {request.Question}\nA: {request.AiResponse}\nE: {request.GoldenOutput}\nEvaluate if A is a valid and relevant answer to Q. Score (0-1) & Reason:";
+            //}
 
             //string prompt = $"Question: {request.Question}\n\nApplication Response: {request.AiResponse}\n\nExpected Golden Response: {request.GoldenOutput}\n\nBased on the question and the expected golden response, evaluate the application's response for validity and relevance. Provide a score (e.g., 0.0 to 1.0) and a brief rationale.";
             prompt = $"Q: {request.Question}\nA: {request.AiResponse}\nE: {request.GoldenOutput}\nValid and relevant? (Semantic, common knowledge). Ignore minor format (case, extra info). If unsure, quick fact-check. Score (0-1) and Reason:";
 
             try
             {
-                string llmResponseJson = await _providers[request.ProviderType].GetResponseAsync(request.Endpoint, prompt, request.Configuration);
+                string llmResponseJson = await _provider.GetResponseAsync(request.Endpoint, prompt, request.Configuration);
 
                 LLMParseResult parsedResult;
                 if (request.ProviderType == ProviderType.Gemini)
@@ -99,11 +99,14 @@ namespace LLMEval
                     score = 0;
                 }
 
+                string confidence = score >=0.8 ? "High" : score >= .5 ? "Medium" : "Low";
+
                 return new EvaluationResult
                 {
                     Score = score,
                     IsPassed = isPassed,
-                    Details = parsedResult.Description
+                    Details = parsedResult.Description,
+                    Confidence = confidence
                 };
             }
             catch (Exception ex)

@@ -7,9 +7,9 @@ namespace LLMEval
     {
         private readonly HttpClient _httpClient;
 
-        public GeminiProvider()
+        public GeminiProvider(HttpClient httpClient)
         {
-            _httpClient = new HttpClient();
+            _httpClient = httpClient ?? new HttpClient();
         }
 
         public async Task<string> GetResponseAsync(string endpoint, string question, Dictionary<string, string> configuration)

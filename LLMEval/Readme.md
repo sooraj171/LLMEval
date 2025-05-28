@@ -86,7 +86,7 @@ This class contains static methods to parse the responses from the LLM judges (O
 3.  **Call `EvaluateAsync`:** Call the `EvaluateAsync` method of the `AdvancedEvaluationService` with your `EvaluationRequest` object. This will return an `EvaluationResult`.
 
     ```csharp
-    EvaluationResult result = await evaluationService.EvaluateAsync(request);
+    EvaluationResult result = await _evalService.EvaluateAsync(request);
 
     Console.WriteLine($"Score: {result.Score}");
     Console.WriteLine($"Passed: {result.IsPassed}");

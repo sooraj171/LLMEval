@@ -7,7 +7,7 @@
 
     <!-- NuGet package metadata -->
     <PackageId>STAF.LLMEval</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>Sooraj Ramachandran</Authors>
     <Company>Sooraj Ramachandran</Company>
     <Product>LLMEval</Product>

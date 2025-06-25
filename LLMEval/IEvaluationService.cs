@@ -89,6 +89,10 @@ namespace LLMEval
                 {
                     parsedResult = LLMResponseParser.ParseOllamaEvaluationResponse(llmResponseJson);
                 }
+                else if (request.ProviderType == ProviderType.OpenAI)
+                {
+                    parsedResult = LLMResponseParser.ParseOpenAIEvaluationResponse(llmResponseJson);
+                }
                 else
                 {
                     return new EvaluationResult { Score = 0, IsPassed = false, Details = "Unsupported LLM provider for parsing." };

@@ -27,14 +27,9 @@ namespace LLMEval
             }
             if (!configuration.TryGetValue("Model", out var model))
             {
-                throw new ArgumentException("Ollama model is missing in the configuration.");
+                model = DefaultModel;
             }
 
-            model = DefaultModel;
-            if (configuration.TryGetValue("model", out var configModel))
-            {
-                model = configModel;
-            }
 
             try
             {

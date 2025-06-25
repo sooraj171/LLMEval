@@ -62,6 +62,10 @@ This class contains static methods to parse the responses from the LLM judges (O
 1.  **Create an `EvaluationRequest` object:** Populate the properties of this object with the necessary information, including the question, AI response, golden output (or reference document), provider type, endpoint, and your desired evaluation settings.
 
     ```csharp
+    Dictionary<string, string> config = new Dictionary<string, string>();
+    config.Add("ApiKey", "ActualKeyVal");
+    config.Add("Model", "ModelName");
+
     var request = new EvaluationRequest
     {
         Question = "What is the capital of France?",
@@ -69,10 +73,10 @@ This class contains static methods to parse the responses from the LLM judges (O
         GoldenOutput = "Paris",
         ProviderType = ProviderType.Gemini,
         Endpoint = "your_gemini_endpoint",
-        Configuration = new Dictionary<string, string> { { "ApiKey", "YOUR_API_KEY" } }, // Secure this!
+        Configuration = config, // Secure this!
         PassThreshold = 0.8,
         EvaluationType = EvaluationType.LLMAsJudge,
-        IsReferenceDocument = false
+        IsReferenceDoc = false
     };
     ```
 

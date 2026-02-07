@@ -16,10 +16,10 @@ jobs:
           dotnet-version: '8.0.x'
       
       - name: Restore dependencies
-        run: dotnet restore LLMEval/LLMEval.csproj
+        run: dotnet restore LLMEval.sln
       
       - name: Build
-        run: dotnet build LLMEval/LLMEval.csproj --configuration Release --no-restore
+        run: dotnet build LLMEval.sln --configuration Release --no-restore
       
       - name: Pack
         run: dotnet pack LLMEval/LLMEval.csproj --configuration Release --no-build --output ./nupkg

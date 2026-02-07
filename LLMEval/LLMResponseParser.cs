@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace LLMEval
@@ -16,11 +16,11 @@ namespace LLMEval
             {
                 var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(jsonResponse);
 
-                if (geminiResponse?.candidates != null && geminiResponse.candidates.Length > 0 &&
-                    geminiResponse.candidates[0].content?.parts != null && geminiResponse.candidates[0].content.parts.Length > 0)
+                var firstCandidate = geminiResponse?.candidates?[0];
+                if (firstCandidate?.content?.parts != null && firstCandidate.content.parts.Length > 0)
                 {
-                    string llmOutput = geminiResponse.candidates[0].content.parts[0].text;
-                    return ParseLLMOutput(llmOutput);
+                    string? llmOutput = firstCandidate.content.parts[0].text;
+                    return ParseLLMOutput(llmOutput ?? string.Empty);
                 }
                 else
                 {
@@ -107,10 +107,12 @@ namespace LLMEval
             try
             {
                 var openAIResponse = JsonSerializer.Deserialize<OpenAIChatCompletionResponse>(jsonResponse);
-                if (openAIResponse?.choices != null && openAIResponse.choices.Length > 0 &&
-                    openAIResponse.choices[0].message?.content != null)
+                var choices = openAIResponse?.choices;
+                var firstChoice = (choices != null && choices.Length > 0) ? choices[0] : null;
+                var content = firstChoice?.message?.content;
+                if (!string.IsNullOrEmpty(content))
                 {
-                    return ParseLLMOutput(openAIResponse.choices[0].message.content);
+                    return ParseLLMOutput(content);
                 }
                 else
                 {
@@ -152,8 +154,8 @@ namespace LLMEval
     // New class to hold the parsed LLM response
     public class LLMParseResult
     {
-        public string ScoreString { get; set; }
-        public string Description { get; set; }
+        public string ScoreString { get; set; } = "0";
+        public string Description { get; set; } = string.Empty;
     }
 
     // Define the necessary class to deserialize the Ollama response

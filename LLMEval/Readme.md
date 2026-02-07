@@ -115,7 +115,7 @@ Send me a note in the community if you want to contribute to this library. I am 
 
 MIT License
 
-Copyright (c) 2025 Sooraj Ramachandran
+Copyright (c) 2026 Sooraj Ramachandran
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

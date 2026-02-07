@@ -7,7 +7,7 @@
 
     <!-- NuGet package metadata -->
     <PackageId>STAF.LLMEval</PackageId>
-    <Version>1.1.0</Version>
+    <Version>1.3.0</Version>
     <Authors>Sooraj Ramachandran</Authors>
     <Company>Sooraj Ramachandran</Company>
     <Product>LLMEval</Product>
@@ -16,7 +16,7 @@
     <RepositoryUrl>https://github.com/sooraj171</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/sooraj171/LLMEval</PackageProjectUrl>
-    <Copyright>Copyright © Sooraj Ramachandran 2025</Copyright>
+    <Copyright>Copyright © Sooraj Ramachandran 2026</Copyright>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>

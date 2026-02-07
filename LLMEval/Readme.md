@@ -1,4 +1,4 @@
-﻿# AI Response Evaluation Library Help
+# AI Response Evaluation Library Help
 
 This document provides a guide on how to use the AI Response Evaluation Library. This library allows you to evaluate the responses of AI applications against expected golden outputs and, optionally, reference documents, using various AI models as judges (currently supporting Ollama, OpenAI, and Gemini).
 
@@ -33,7 +33,7 @@ This class represents the input for evaluating an AI response. It contains the f
 * `Configuration` (`Dictionary<string, string>`): A dictionary to hold provider-specific configurations, such as API keys (use with caution in production).
 * `PassThreshold` (double): A numerical threshold (between 0 and 1) that the evaluation score must meet or exceed for the evaluation to be considered a pass.
 * `EvaluationType` (`enum`): Specifies the type of evaluation:
-    * `DirectComparison`: Evaluates the `AiResponse` against the `GoldenOutput` using internal logic (e.g., exact match, keyword, semantic).
+    * `DirectEvaluation`: Evaluates the `AiResponse` against the `GoldenOutput` using internal logic (exact match, keyword, or TF-IDF semantic similarity).
     * `LLMAsJudge`: Uses the specified AI model to evaluate the `AiResponse` based on the `Question` and `GoldenOutput` (and optionally `IsReferenceDocument`).
 * `IsReferenceDocument` (bool): A flag indicating whether the `GoldenOutput` should be treated as a reference document for the `AiResponse`.
 

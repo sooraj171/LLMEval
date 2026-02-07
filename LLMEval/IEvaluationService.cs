@@ -1,24 +1,29 @@
-﻿
 namespace LLMEval
 {
     public interface IEvaluationService
     {
-        Task<EvaluationResult> EvaluateAsync(EvaluationRequest request);
+        Task<EvaluationResult> EvaluateAsync(EvaluationRequest request, CancellationToken cancellationToken = default);
     }
 
     public class AdvancedEvaluationService : IEvaluationService
     {
         private readonly IAiProviderFactory _providerFactory;
         private readonly HttpClient _httpClient;
-        private readonly Dictionary<ProviderType, IAiProvider> _providers;
+        private readonly TfidfSimilarity _tfidfSimilarity;
 
         public AdvancedEvaluationService(IAiProviderFactory providerFactory)
+            : this(providerFactory, new HttpClient())
         {
-            _providerFactory = providerFactory;
-            _httpClient = new HttpClient();
         }
 
-        public async Task<EvaluationResult> EvaluateAsync(EvaluationRequest request)
+        public AdvancedEvaluationService(IAiProviderFactory providerFactory, HttpClient httpClient)
+        {
+            _providerFactory = providerFactory ?? throw new ArgumentNullException(nameof(providerFactory));
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _tfidfSimilarity = new TfidfSimilarity();
+        }
+
+        public async Task<EvaluationResult> EvaluateAsync(EvaluationRequest request, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -26,9 +31,9 @@ namespace LLMEval
 
                 if (request.EvaluationType == EvaluationType.LLMAsJudge)
                 {
-                    return await EvaluateWithLLMAsync(provider,request);
+                    return await EvaluateWithLLMAsync(provider, request, cancellationToken);
                 }
-                else // Default to direct comparison logic
+                else
                 {
                     return await EvaluateDirectlyAsync(request);
                 }
@@ -44,41 +49,22 @@ namespace LLMEval
             }
         }
 
-        private async Task<EvaluationResult> EvaluateWithLLMAsync(IAiProvider _provider, EvaluationRequest request)
+        private async Task<EvaluationResult> EvaluateWithLLMAsync(IAiProvider provider, EvaluationRequest request, CancellationToken cancellationToken)
         {
-            string prompt = string.Empty;
-
-            if (request.IsReferenceDoc)
-            {
-                prompt = $@"Reference Document:
+            string prompt = request.IsReferenceDoc
+                ? $@"Reference Document:
                         {request.GoldenOutput}
                         Question: {request.Question}
                         AI Response: {request.AiResponse}
-                        AI's info in Reference Document? (Factual). Score (0-1) (1=all info aligns, 0=no info aligns). Reason:";
-                //prompt = $@"Reference Document:
-                //    {request.GoldenOutput}
-                //    Question: {request.Question}
-                //    AI Response: {request.AiResponse}
-                //    Based on the provided Reference Document ONLY, does the AI Response contain information that is present in or directly supported by the Reference Document? Evaluate the factual consistency.
-                //    Provide a score (0-1). A score of 1 indicates that all factual claims in the AI Response are directly supported by the Reference Document. A score of 0 indicates that the AI Response contains information not found in the Reference Document. Provide a brief reason for the score.";
-            }
-            else
-            {
-                prompt = $@"Q: {request.Question}
+                        AI's info in Reference Document? (Factual). Score (0-1) (1=all info aligns, 0=no info aligns). Reason:"
+                : $@"Q: {request.Question}
                             A: {request.AiResponse}
                             E: {request.GoldenOutput}
                             Valid and relevant? (Semantic, common knowledge). Ignore minor format (case, extra info). If unsure, quick fact-check. Score (0-1) and Reason:";
-            }
-            //else
-            //{
-            //    prompt = $"Q: {request.Question}\nA: {request.AiResponse}\nE: {request.GoldenOutput}\nEvaluate if A is a valid and relevant answer to Q. Score (0-1) & Reason:";
-            //}
-
-            //string prompt = $"Question: {request.Question}\n\nApplication Response: {request.AiResponse}\n\nExpected Golden Response: {request.GoldenOutput}\n\nBased on the question and the expected golden response, evaluate the application's response for validity and relevance. Provide a score (e.g., 0.0 to 1.0) and a brief rationale.";
 
             try
             {
-                string llmResponseJson = await _provider.GetResponseAsync(request.Endpoint, prompt, request.Configuration);
+                string llmResponseJson = await provider.GetResponseAsync(request.Endpoint, prompt, request.Configuration, cancellationToken);
 
                 LLMParseResult parsedResult;
                 if (request.ProviderType == ProviderType.Gemini)
@@ -102,8 +88,7 @@ namespace LLMEval
                 double.TryParse(parsedResult.ScoreString, out score);
                 bool isPassed = score >= request.PassThreshold;
 
-                // Potentially adjust isPassed based on the reasoning for IsReferenceDocument
-                if (request.IsReferenceDoc && parsedResult.Description.ToLower().Contains("not found in document"))
+                if (request.IsReferenceDoc && (parsedResult.Description?.ToLower().Contains("not found in document") ?? false))
                 {
                     isPassed = false; // Or adjust score accordingly
                     score = 0;
@@ -115,7 +100,7 @@ namespace LLMEval
                 {
                     Score = score,
                     IsPassed = isPassed,
-                    Details = parsedResult.Description,
+                    Details = parsedResult.Description ?? string.Empty,
                     Confidence = confidence
                 };
             }
@@ -130,11 +115,10 @@ namespace LLMEval
             }
         }
 
-        private async Task<EvaluationResult> EvaluateDirectlyAsync(EvaluationRequest request)
+        private Task<EvaluationResult> EvaluateDirectlyAsync(EvaluationRequest request)
         {
-            // ... (Your previous direct comparison logic - ExactMatchScore, KeywordMatchScore, SemanticSimilarityScore)
-            double score = 0;
-            string details = null;
+            double score;
+            string details = string.Empty;
 
             switch (request.MatchingType?.ToLower())
             {
@@ -142,7 +126,7 @@ namespace LLMEval
                     score = KeywordMatchScore(request.AiResponse, request.GoldenOutput);
                     break;
                 case "semantic":
-                    score = await SemanticSimilarityScore(request.AiResponse, request.GoldenOutput);
+                    (score, details) = _tfidfSimilarity.Calculate(request.AiResponse, request.GoldenOutput);
                     break;
                 default:
                     score = ExactMatchScore(request.AiResponse, request.GoldenOutput);
@@ -151,12 +135,12 @@ namespace LLMEval
 
             bool isPassed = score >= request.PassThreshold;
 
-            return new EvaluationResult
+            return Task.FromResult(new EvaluationResult
             {
                 Score = score,
                 IsPassed = isPassed,
                 Details = details
-            };
+            });
         }
 
         private double ExactMatchScore(string response, string golden)
@@ -183,16 +167,5 @@ namespace LLMEval
             return (double)matchedKeywords / goldenKeywords.Count;
         }
 
-        private async Task<double> SemanticSimilarityScore(string response, string golden)
-        {
-            // This is a placeholder for a more advanced implementation.
-            // It would likely involve:
-            // 1. Using an NLP library or service to get text embeddings for both strings.
-            // 2. Calculating the cosine similarity between the embeddings.
-            // Consider libraries like NLTK (Python, but could be interfaced), or cloud-based services.
-            // Fact-checking against a knowledge base would be even more complex.
-            Console.WriteLine("Semantic similarity is not yet implemented.");
-            return 0.5; // Placeholder score
-        }
     }
 }

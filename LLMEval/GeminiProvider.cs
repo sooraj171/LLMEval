@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json;
 
 namespace LLMEval
@@ -12,7 +12,7 @@ namespace LLMEval
             _httpClient = httpClient ?? new HttpClient();
         }
 
-        public async Task<string> GetResponseAsync(string endpoint, string question, Dictionary<string, string> configuration)
+        public async Task<string> GetResponseAsync(string endpoint, string prompt, Dictionary<string, string> configuration, CancellationToken cancellationToken = default)
         {
             if (!configuration.TryGetValue("ApiKey", out var apiKey))
             {
@@ -34,7 +34,7 @@ namespace LLMEval
                     {
                         parts = new[]
                         {
-                            new { text = question }
+                            new { text = prompt }
                         }
                     }
                 }
@@ -48,16 +48,16 @@ namespace LLMEval
                 var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
                 request.Content = content;
 
-                var response = await _httpClient.SendAsync(request);
+                var response = await _httpClient.SendAsync(request, cancellationToken);
                 response.EnsureSuccessStatusCode(); // Throw an exception for bad status codes
 
-                var responseContent = await response.Content.ReadAsStringAsync();
+                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
                 if (responseContent == null)
                 {
                     throw new InvalidOperationException("Parsed Response is NULL");
                 }
-                return responseContent.ToString() ?? "";
+                return responseContent;
             }
             catch (HttpRequestException ex)
             {

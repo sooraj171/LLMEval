@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -48,7 +48,7 @@ namespace LLMEval
             }
         }
 
-        private SimilarityResult ValidateInputs(string reference, string output)
+        private SimilarityResult? ValidateInputs(string reference, string output)
         {
             if (string.IsNullOrWhiteSpace(reference) || string.IsNullOrWhiteSpace(output))
             {

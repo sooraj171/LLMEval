@@ -9,7 +9,9 @@ namespace LLMEval
     public enum EvaluationType
     {
         LLMAsJudge,
-        DirectEvaluation
+        DirectEvaluation,
+        /// <summary>Hallucination &amp; grounding validation: checks each factual statement in the AI response against reference document(s).</summary>
+        GroundedAnswerCheck
     }
 
     public class EvaluationRequest
@@ -23,8 +25,11 @@ namespace LLMEval
         public string MatchingType { get; set; } = string.Empty; // e.g., "exact", "keyword", "semantic"
         public double PassThreshold { get; set; } // User-configurable pass threshold
         public string ModelName { get; set; } = string.Empty; // Name of the model being evaluated
-        public EvaluationType EvaluationType { get; set; } 
+        public EvaluationType EvaluationType { get; set; }
         public bool IsReferenceDoc { get; set; }
+
+        /// <summary>Optional: one or more reference documents for grounding. If null or empty, <see cref="GoldenOutput"/> is used as the single reference.</summary>
+        public IReadOnlyList<string>? ReferenceDocuments { get; set; }
     }
 }
 

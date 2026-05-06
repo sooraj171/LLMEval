@@ -29,14 +29,15 @@ namespace LLMEval
             {
                 IAiProvider provider = _providerFactory.CreateProvider(request.ProviderType, _httpClient);
 
+                if (request.EvaluationType == EvaluationType.GroundedAnswerCheck)
+                {
+                    return await EvaluateGroundedAnswerCheckAsync(provider, request, cancellationToken);
+                }
                 if (request.EvaluationType == EvaluationType.LLMAsJudge)
                 {
                     return await EvaluateWithLLMAsync(provider, request, cancellationToken);
                 }
-                else
-                {
-                    return await EvaluateDirectlyAsync(request);
-                }
+                return await EvaluateDirectlyAsync(request);
             }
             catch (Exception ex)
             {
@@ -47,6 +48,125 @@ namespace LLMEval
                     Details = $"Evaluation failed: {ex.Message}"
                 };
             }
+        }
+
+        private async Task<EvaluationResult> EvaluateGroundedAnswerCheckAsync(IAiProvider provider, EvaluationRequest request, CancellationToken cancellationToken)
+        {
+            string referenceText = ResolveReferenceText(request);
+            if (referenceText.Length > ResponseStatementSplitter.MaxReferenceLength)
+            {
+                referenceText = referenceText.Substring(0, ResponseStatementSplitter.MaxReferenceLength) + "...";
+            }
+
+            var config = new Dictionary<string, string>(request.Configuration);
+            if (!config.ContainsKey("Temperature"))
+            {
+                config["Temperature"] = "0";
+            }
+
+            var statements = ResponseStatementSplitter.SplitIntoStatements(request.AiResponse);
+            if (statements.Count == 0)
+            {
+                return new EvaluationResult
+                {
+                    Score = 1.0,
+                    IsPassed = true,
+                    Details = "No factual statements to validate.",
+                    UnsupportedStatements = Array.Empty<string>(),
+                    PartiallySupportedStatements = Array.Empty<string>(),
+                    RiskLevel = "Low"
+                };
+            }
+
+            var unsupported = new List<string>();
+            var partiallySupported = new List<string>();
+            int supportedCount = 0;
+
+            const string systemInstruction = "You are a grounding validator. Given REFERENCE TEXT and one CLAIM from an AI response, output exactly one of: SUPPORTED, PARTIALLY_SUPPORTED, or UNSUPPORTED. Then optionally one line starting with Reason:";
+            string refBlock = $"REFERENCE TEXT:\n{referenceText}";
+
+            foreach (var statement in statements)
+            {
+                string prompt = $"{systemInstruction}\n\n{refBlock}\n\nCLAIM to check: \"{statement.Replace("\"", "'")}\"\n\nYour classification (one word):";
+                string jsonResponse;
+                try
+                {
+                    jsonResponse = await provider.GetResponseAsync(request.Endpoint, prompt, config, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    return new EvaluationResult
+                    {
+                        Score = 0,
+                        IsPassed = false,
+                        Details = $"Judge call failed for statement: {ex.Message}",
+                        UnsupportedStatements = unsupported,
+                        PartiallySupportedStatements = partiallySupported,
+                        RiskLevel = "High"
+                    };
+                }
+
+                string? rawContent = GetRawContentFromProvider(request.ProviderType, jsonResponse);
+                var label = GroundingJudgeParser.ParseGroundingJudgeOutput(rawContent ?? string.Empty);
+
+                switch (label)
+                {
+                    case GroundingLabel.Supported:
+                        supportedCount++;
+                        break;
+                    case GroundingLabel.PartiallySupported:
+                        partiallySupported.Add(statement);
+                        break;
+                    default:
+                        unsupported.Add(statement);
+                        break;
+                }
+            }
+
+            double groundingScore = (double)supportedCount / statements.Count;
+            string riskLevel = ComputeRiskLevel(supportedCount, partiallySupported.Count, unsupported.Count, statements.Count);
+            bool isPassed = riskLevel != "High" && groundingScore >= request.PassThreshold;
+
+            string details = $"Grounding: {supportedCount}/{statements.Count} statements fully supported ({groundingScore:P0}). Unsupported: {unsupported.Count}; Partial: {partiallySupported.Count}. Risk: {riskLevel}.";
+
+            return new EvaluationResult
+            {
+                Score = groundingScore,
+                IsPassed = isPassed,
+                Confidence = riskLevel == "Low" ? "High" : riskLevel == "Medium" ? "Medium" : "Low",
+                Details = details,
+                UnsupportedStatements = unsupported,
+                PartiallySupportedStatements = partiallySupported,
+                RiskLevel = riskLevel
+            };
+        }
+
+        private static string ResolveReferenceText(EvaluationRequest request)
+        {
+            if (request.ReferenceDocuments != null && request.ReferenceDocuments.Count > 0)
+            {
+                return string.Join("\n\n", request.ReferenceDocuments);
+            }
+            return request.GoldenOutput ?? string.Empty;
+        }
+
+        private static string? GetRawContentFromProvider(ProviderType providerType, string jsonResponse)
+        {
+            return providerType switch
+            {
+                ProviderType.Gemini => LLMResponseParser.GetRawContentFromGeminiResponse(jsonResponse),
+                ProviderType.Ollama => LLMResponseParser.GetRawContentFromOllamaResponse(jsonResponse),
+                ProviderType.OpenAI => LLMResponseParser.GetRawContentFromOpenAIResponse(jsonResponse),
+                _ => null
+            };
+        }
+
+        private static string ComputeRiskLevel(int supportedCount, int partialCount, int unsupportedCount, int total)
+        {
+            if (total == 0) return "Low";
+            if (unsupportedCount > 0) return "High";
+            if (partialCount > 0) return "Medium";
+            return "Low";
         }
 
         private async Task<EvaluationResult> EvaluateWithLLMAsync(IAiProvider provider, EvaluationRequest request, CancellationToken cancellationToken)

@@ -35,15 +35,20 @@ This class represents the input for evaluating an AI response. It contains the f
 * `EvaluationType` (`enum`): Specifies the type of evaluation:
     * `DirectEvaluation`: Evaluates the `AiResponse` against the `GoldenOutput` using internal logic (exact match, keyword, or TF-IDF semantic similarity).
     * `LLMAsJudge`: Uses the specified AI model to evaluate the `AiResponse` based on the `Question` and `GoldenOutput` (and optionally `IsReferenceDocument`).
+    * `GroundedAnswerCheck`: **Hallucination & grounding validation.** Splits the AI response into factual statements and checks each against the reference document(s) using a judge model. Returns a grounding score, lists of unsupported/partially supported statements, and a risk level (Low/Medium/High). Ideal for RAG, chatbots, and CI regression tests.
 * `IsReferenceDocument` (bool): A flag indicating whether the `GoldenOutput` should be treated as a reference document for the `AiResponse`.
+* `ReferenceDocuments` (`IReadOnlyList<string>?`): Optional. For `GroundedAnswerCheck`, one or more reference documents. If null or empty, `GoldenOutput` is used as the single reference.
 
 ### `EvaluationResult`
 
 This class represents the output of the evaluation. It contains the following properties:
 
-* `Score` (double): A numerical score (typically between 0 and 1) indicating the quality or correctness of the `AiResponse`.
+* `Score` (double): A numerical score (typically between 0 and 1) indicating the quality or correctness of the `AiResponse`. For `GroundedAnswerCheck`, this is the **grounding score** (percentage of statements fully supported by the reference).
 * `IsPassed` (bool): A boolean indicating whether the `Score` meets or exceeds the `PassThreshold`.
 * `Details` (string): Additional information or reasoning for the evaluation, often provided by the LLM judge.
+* `UnsupportedStatements` (`IReadOnlyList<string>?`): When using `GroundedAnswerCheck`, the list of statements classified as unsupported (potential hallucinations).
+* `PartiallySupportedStatements` (`IReadOnlyList<string>?`): When using `GroundedAnswerCheck`, statements only partially supported by the reference.
+* `RiskLevel` (string?): When using `GroundedAnswerCheck`, overall risk: `"Low"`, `"Medium"`, or `"High"`.
 
 ### `IEvaluationService` and `AdvancedEvaluationService`
 
@@ -96,6 +101,38 @@ This class contains static methods to parse the responses from the LLM judges (O
     Console.WriteLine($"Passed: {result.IsPassed}");
     Console.WriteLine($"Details: {result.Details}");
     ```
+
+### Hallucination & Grounding Validation (`GroundedAnswerCheck`)
+
+Use `EvaluationType.GroundedAnswerCheck` to verify that an AI response is supported by reference text. The judge model classifies each factual statement as **SUPPORTED**, **PARTIALLY_SUPPORTED**, or **UNSUPPORTED**. Set `Temperature` to `0` in `Configuration` for deterministic, test-friendly runs.
+
+```csharp
+var request = new EvaluationRequest
+{
+    Question = "Summarize the document.",
+    AiResponse = "The report states X. It also says Y and Z.",
+    GoldenOutput = "Full reference document text...",  // or use ReferenceDocuments = new[] { "Doc1...", "Doc2..." }
+    ReferenceDocuments = null,  // optional; if set, overrides GoldenOutput
+    ProviderType = ProviderType.Ollama,
+    Endpoint = "http://localhost:11434",
+    Configuration = new Dictionary<string, string>
+    {
+        ["Model"] = "llama3.2",
+        ["Temperature"] = "0"   // deterministic for tests
+    },
+    PassThreshold = 0.8,
+    EvaluationType = EvaluationType.GroundedAnswerCheck
+};
+
+var result = await _evalService.EvaluateAsync(request);
+
+Console.WriteLine($"Grounding score: {result.Score:P0}");
+Console.WriteLine($"Risk: {result.RiskLevel}");
+foreach (var s in result.UnsupportedStatements ?? Array.Empty<string>())
+    Console.WriteLine($"  Unsupported: {s}");
+```
+
+Long responses and long reference texts are truncated internally to avoid token overflows; see `ResponseStatementSplitter.MaxReferenceLength` and `MaxResponseLength` for limits.
 
 ## Security Considerations
 

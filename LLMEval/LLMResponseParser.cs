@@ -128,6 +128,41 @@ namespace LLMEval
                 return new LLMParseResult { ScoreString = "0", Description = $"An unexpected error occurred while parsing the LLM response: {ex.Message}\nRaw Response: {jsonResponse}" };
             }
         }
+
+        /// <summary>Extracts raw text from provider JSON for use with <see cref="GroundingJudgeParser"/>.</summary>
+        public static string? GetRawContentFromGeminiResponse(string jsonResponse)
+        {
+            try
+            {
+                var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(jsonResponse);
+                var firstCandidate = geminiResponse?.candidates?[0];
+                return firstCandidate?.content?.parts?.Length > 0 ? firstCandidate.content.parts![0].text : null;
+            }
+            catch { return null; }
+        }
+
+        /// <summary>Extracts raw text from provider JSON for use with <see cref="GroundingJudgeParser"/>.</summary>
+        public static string? GetRawContentFromOllamaResponse(string jsonResponse)
+        {
+            try
+            {
+                var ollamaResponse = JsonSerializer.Deserialize<OllamaEvaluationResponse>(jsonResponse);
+                return ollamaResponse?.response;
+            }
+            catch { return null; }
+        }
+
+        /// <summary>Extracts raw text from provider JSON for use with <see cref="GroundingJudgeParser"/>.</summary>
+        public static string? GetRawContentFromOpenAIResponse(string jsonResponse)
+        {
+            try
+            {
+                var openAIResponse = JsonSerializer.Deserialize<OpenAIChatCompletionResponse>(jsonResponse);
+                var firstChoice = openAIResponse?.choices?.Length > 0 ? openAIResponse.choices[0] : null;
+                return firstChoice?.message?.content;
+            }
+            catch { return null; }
+        }
     }
 
     // Define the necessary classes to deserialize the Gemini response
@@ -156,6 +191,33 @@ namespace LLMEval
     {
         public string ScoreString { get; set; } = "0";
         public string Description { get; set; } = string.Empty;
+    }
+
+    /// <summary>Classification of a single claim against the reference for grounding validation.</summary>
+    public enum GroundingLabel
+    {
+        Supported,
+        PartiallySupported,
+        Unsupported
+    }
+
+    /// <summary>Parses judge output for GroundedAnswerCheck: expects SUPPORTED, PARTIALLY_SUPPORTED, or UNSUPPORTED (case-insensitive).</summary>
+    public static class GroundingJudgeParser
+    {
+        private static readonly Regex GroundingLabelRegex = new Regex(
+            @"\b(SUPPORTED|PARTIALLY_SUPPORTED|PARTIAL|UNSUPPORTED)\b",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        public static GroundingLabel ParseGroundingJudgeOutput(string rawText)
+        {
+            if (string.IsNullOrWhiteSpace(rawText)) return GroundingLabel.Unsupported;
+            var m = GroundingLabelRegex.Match(rawText.Trim());
+            if (!m.Success) return GroundingLabel.Unsupported;
+            var token = m.Groups[1].Value.ToUpperInvariant();
+            if (token == "SUPPORTED") return GroundingLabel.Supported;
+            if (token == "PARTIALLY_SUPPORTED" || token == "PARTIAL") return GroundingLabel.PartiallySupported;
+            return GroundingLabel.Unsupported;
+        }
     }
 
     // Define the necessary class to deserialize the Ollama response

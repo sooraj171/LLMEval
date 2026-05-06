@@ -26,12 +26,18 @@ namespace LLMEval
 
             try
             {
-                // Create the request payload
+                var options = new Dictionary<string, object>();
+                if (configuration.TryGetValue("Temperature", out var tempStr) && double.TryParse(tempStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var temp))
+                {
+                    options["temperature"] = Math.Clamp(temp, 0, 2);
+                }
+
                 var request = new OllamaRequest
                 {
                     Model = model,
                     Prompt = prompt,
-                    Stream = false  // Ensure we get a complete response
+                    Stream = false,
+                    Options = options.Count > 0 ? options : null
                 };
 
                 // Serialize the request
@@ -109,6 +115,10 @@ namespace LLMEval
 
         [JsonPropertyName("stream")]
         public bool Stream { get; set; } = false;
+
+        [JsonPropertyName("options")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Dictionary<string, object>? Options { get; set; }
     }
 
     

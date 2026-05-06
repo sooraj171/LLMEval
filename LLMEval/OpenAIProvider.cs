@@ -33,14 +33,20 @@ namespace LLMEval
 
             try
             {
+                var temperature = 1.0;
+                if (configuration.TryGetValue("Temperature", out var tempStr) && double.TryParse(tempStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var t))
+                {
+                    temperature = Math.Clamp(t, 0, 2);
+                }
+
                 var requestBody = new
                 {
                     model = model,
                     messages = new[]
                     {
                         new { role = "user", content = prompt }
-                    }
-                    
+                    },
+                    temperature = temperature
                 };
 
                 var jsonRequestBody = JsonSerializer.Serialize(requestBody);

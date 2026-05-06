@@ -240,3 +240,207 @@ public class LLMResponseParserTests
         Assert.Equal("0.95", result.ScoreString);
     }
 }
+
+public class GroundingJudgeParserTests
+{
+    [Theory]
+    [InlineData("SUPPORTED", GroundingLabel.Supported)]
+    [InlineData("supported", GroundingLabel.Supported)]
+    [InlineData("UNSUPPORTED", GroundingLabel.Unsupported)]
+    [InlineData("Unsupported. Reason: not in doc.", GroundingLabel.Unsupported)]
+    [InlineData("PARTIALLY_SUPPORTED", GroundingLabel.PartiallySupported)]
+    [InlineData("PARTIAL", GroundingLabel.PartiallySupported)]
+    [InlineData("Partial match. Reason: only one part.", GroundingLabel.PartiallySupported)]
+    public void ParseGroundingJudgeOutput_ReturnsCorrectLabel(string raw, GroundingLabel expected)
+    {
+        var result = GroundingJudgeParser.ParseGroundingJudgeOutput(raw);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void ParseGroundingJudgeOutput_EmptyOrNull_ReturnsUnsupported()
+    {
+        Assert.Equal(GroundingLabel.Unsupported, GroundingJudgeParser.ParseGroundingJudgeOutput(""));
+        Assert.Equal(GroundingLabel.Unsupported, GroundingJudgeParser.ParseGroundingJudgeOutput("   "));
+        Assert.Equal(GroundingLabel.Unsupported, GroundingJudgeParser.ParseGroundingJudgeOutput("No label here"));
+    }
+}
+
+public class ResponseStatementSplitterTests
+{
+    [Fact]
+    public void SplitIntoStatements_Empty_ReturnsEmpty()
+    {
+        var result = ResponseStatementSplitter.SplitIntoStatements("");
+        Assert.Empty(result);
+        result = ResponseStatementSplitter.SplitIntoStatements("   ");
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void SplitIntoStatements_Sentences_SplitsByPeriod()
+    {
+        var result = ResponseStatementSplitter.SplitIntoStatements("First sentence. Second sentence. Third.");
+        Assert.Equal(3, result.Count);
+        Assert.Contains("First sentence.", result);
+        Assert.Contains("Second sentence.", result);
+        Assert.Contains("Third.", result);
+    }
+
+    [Fact]
+    public void SplitIntoStatements_BulletList_SplitsByBullets()
+    {
+        var result = ResponseStatementSplitter.SplitIntoStatements("- Item one.\n- Item two.\n* Item three.");
+        Assert.True(result.Count >= 2);
+        Assert.Contains(result, s => s.Contains("Item one") || s.Contains("one"));
+        Assert.Contains(result, s => s.Contains("Item two") || s.Contains("two"));
+    }
+
+    [Fact]
+    public void SplitIntoStatements_NumberedList_SplitsByNumbers()
+    {
+        var result = ResponseStatementSplitter.SplitIntoStatements("1. First point. 2. Second point.");
+        Assert.True(result.Count >= 1);
+    }
+}
+
+/// <summary>Test double: returns predefined JSON responses in order so GroundedAnswerCheck can be tested without a live API.</summary>
+internal class MockAiProvider : IAiProvider
+{
+    private int _index;
+    public List<string> Responses { get; } = new();
+
+    public Task<string> GetResponseAsync(string endpoint, string prompt, Dictionary<string, string> configuration, CancellationToken cancellationToken = default)
+    {
+        if (_index >= Responses.Count)
+            return Task.FromResult("{\"response\": \"UNSUPPORTED\", \"done\": true}");
+        return Task.FromResult(Responses[_index++]);
+    }
+}
+
+internal class MockAiProviderFactory : IAiProviderFactory
+{
+    public MockAiProvider Provider { get; } = new MockAiProvider();
+
+    public IAiProvider CreateProvider(ProviderType providerType, HttpClient httpClient) => Provider;
+}
+
+public class GroundedAnswerCheckTests
+{
+    private static string OllamaJson(string response) =>
+        $"{{\"response\": \"{response}\", \"model\": \"test\", \"done\": true}}";
+
+    [Fact]
+    public async Task EvaluateAsync_GroundedAnswerCheck_AllSupported_ReturnsHighScoreAndLowRisk()
+    {
+        var factory = new MockAiProviderFactory();
+        factory.Provider.Responses.Add(OllamaJson("SUPPORTED"));
+        factory.Provider.Responses.Add(OllamaJson("SUPPORTED"));
+
+        var service = new AdvancedEvaluationService(factory);
+        var request = new EvaluationRequest
+        {
+            Question = "What is X?",
+            AiResponse = "First claim. Second claim.",
+            GoldenOutput = "Reference document with facts.",
+            ProviderType = ProviderType.Ollama,
+            Endpoint = "http://localhost",
+            Configuration = new Dictionary<string, string> { ["Model"] = "test" },
+            PassThreshold = 0.5,
+            EvaluationType = EvaluationType.GroundedAnswerCheck
+        };
+
+        var result = await service.EvaluateAsync(request);
+
+        Assert.Equal(1.0, result.Score);
+        Assert.True(result.IsPassed);
+        Assert.Equal("Low", result.RiskLevel);
+        Assert.NotNull(result.UnsupportedStatements);
+        Assert.Empty(result.UnsupportedStatements);
+        Assert.NotNull(result.PartiallySupportedStatements);
+        Assert.Empty(result.PartiallySupportedStatements);
+        Assert.Contains("2/2", result.Details);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_GroundedAnswerCheck_OneUnsupported_ReturnsHalfScoreAndHighRisk()
+    {
+        var factory = new MockAiProviderFactory();
+        factory.Provider.Responses.Add(OllamaJson("SUPPORTED"));
+        factory.Provider.Responses.Add(OllamaJson("UNSUPPORTED"));
+
+        var service = new AdvancedEvaluationService(factory);
+        var request = new EvaluationRequest
+        {
+            Question = "What is X?",
+            AiResponse = "Supported claim. Hallucinated claim.",
+            GoldenOutput = "Reference text.",
+            ProviderType = ProviderType.Ollama,
+            Endpoint = "http://localhost",
+            Configuration = new Dictionary<string, string> { ["Model"] = "test" },
+            PassThreshold = 0.5,
+            EvaluationType = EvaluationType.GroundedAnswerCheck
+        };
+
+        var result = await service.EvaluateAsync(request);
+
+        Assert.Equal(0.5, result.Score);
+        Assert.False(result.IsPassed);
+        Assert.Equal("High", result.RiskLevel);
+        Assert.NotNull(result.UnsupportedStatements);
+        Assert.Single(result.UnsupportedStatements);
+        Assert.Contains("Hallucinated", result.UnsupportedStatements[0]);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_GroundedAnswerCheck_UsesReferenceDocuments_WhenProvided()
+    {
+        var factory = new MockAiProviderFactory();
+        factory.Provider.Responses.Add(OllamaJson("SUPPORTED"));
+
+        var service = new AdvancedEvaluationService(factory);
+        var request = new EvaluationRequest
+        {
+            Question = "What is X?",
+            AiResponse = "One claim.",
+            GoldenOutput = "ignored",
+            ReferenceDocuments = new[] { "Doc one.", "Doc two." },
+            ProviderType = ProviderType.Ollama,
+            Endpoint = "http://localhost",
+            Configuration = new Dictionary<string, string> { ["Model"] = "test" },
+            PassThreshold = 0.5,
+            EvaluationType = EvaluationType.GroundedAnswerCheck
+        };
+
+        var result = await service.EvaluateAsync(request);
+
+        Assert.True(result.IsPassed);
+        Assert.Equal(1.0, result.Score);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_GroundedAnswerCheck_NoStatements_ReturnsPassAndLowRisk()
+    {
+        var factory = new MockAiProviderFactory();
+        var service = new AdvancedEvaluationService(factory);
+        var request = new EvaluationRequest
+        {
+            Question = "What?",
+            AiResponse = "  ",
+            GoldenOutput = "Ref",
+            ProviderType = ProviderType.Ollama,
+            Endpoint = "http://localhost",
+            Configuration = new Dictionary<string, string> { ["Model"] = "test" },
+            PassThreshold = 0.8,
+            EvaluationType = EvaluationType.GroundedAnswerCheck
+        };
+
+        var result = await service.EvaluateAsync(request);
+
+        Assert.Equal(1.0, result.Score);
+        Assert.True(result.IsPassed);
+        Assert.Equal("Low", result.RiskLevel);
+        Assert.NotNull(result.UnsupportedStatements);
+        Assert.Empty(result.UnsupportedStatements);
+    }
+}

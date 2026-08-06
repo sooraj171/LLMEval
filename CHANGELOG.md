@@ -1,8 +1,22 @@
 # Changelog
 
-All notable changes to STAF.LLMEval are documented here.
+All notable changes to **STAF.LLMEval** (NuGet: [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval)) are documented here.
+
+STAF.LLMEval is a .NET LLM evaluation / AI testing framework for AI response evaluation, LLM-as-judge scoring, RAG grounding, and hallucination detection.
+
+## [2.0.1] - 2026-08-06
+
+### Changed
+
+- NuGet **title**, **description**, **PackageTags**, and **PackageReleaseNotes** expanded for discoverability (LLM evaluation, AI testing, RAG, hallucination, ChatGPT/GPT, etc.)
+- README / changelog wording aligned for NuGet.org, Google, and AI search
+- **No API or behavior changes** vs 2.0.0
 
 ## [2.0.0] - 2026-08-06
+
+### Summary (NuGet release notes)
+
+Adoption release: multi-TFM (.NET 8/9/10), fluent Eval API, assertions, DI/Options, evaluation suites with HTML/JSON reports, and Azure OpenAI—while keeping classic `EvaluateAsync` compatibility.
 
 ### Added
 

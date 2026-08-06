@@ -1,9 +1,17 @@
 # STAF.LLMEval
 
-Enterprise-friendly .NET library for evaluating LLM responses in unit tests and CI.
+**STAF.LLMEval** is a .NET **LLM evaluation** and **AI testing framework** for scoring and validating **GenAI / ChatGPT / GPT** responses in **unit tests** and **CI/CD**.
+
+Use it to run **exact match**, **semantic similarity**, **LLM-as-judge**, and **RAG groundedness / hallucination detection** against golden answers or reference documents—with a fluent API, assertions, evaluation suites, and HTML/JSON reports. Works with **OpenAI**, **Azure OpenAI**, **Gemini**, and **Ollama** on **.NET 8 / 9 / 10**.
 
 [![NuGet](https://img.shields.io/nuget/v/STAF.LLMEval.svg)](https://www.nuget.org/packages/STAF.LLMEval)
-**v2.0.0** · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
+**v2.0.1** · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT · [Release notes](CHANGELOG.md)
+
+## Who is this for?
+
+- Teams building RAG chatbots who need **grounding** and **hallucination** checks in CI  
+- Developers who want to **evaluate AI responses** like unit tests (`ShouldPass`, `ShouldBeGrounded`)  
+- Anyone searching for **.NET LLM evaluation**, **AI response evaluation**, **prompt/model evaluation**, or **golden-dataset regression**
 
 ## 5-minute start (no API key)
 
@@ -128,7 +136,7 @@ Also supports JSONL and `{ "cases": [ ... ] }`.
 |-----|---------|
 | [`samples/MinimalXunit`](samples/MinimalXunit) | Copy-paste xUnit sample (no API keys) |
 | [`LLMEval/Readme.md`](LLMEval/Readme.md) | Full package / API guide (also on NuGet) |
-| [`CHANGELOG.md`](CHANGELOG.md) | v2.0.0 migration notes |
+| [`CHANGELOG.md`](CHANGELOG.md) | v2.0.0 / v2.0.1 release notes |
 | [`ROADMAP.md`](ROADMAP.md) | Release phases (Phase 1 done; Phase 2 next) |
 
 ## Backward compatibility
@@ -136,3 +144,11 @@ Also supports JSONL and `{ "cases": [ ... ] }`.
 v2.0 keeps `IEvaluationService.EvaluateAsync` / `EvaluationRequest`. Prefer `Eval.*` and assertions for new code.
 
 `EvaluationRequest.ModelName` maps to `Configuration["Model"]` when Model is unset. Semantic Direct matching uses **TF-IDF** (`MatchingType = "semantic"`); the old GloVe helpers are obsolete.
+
+## Release notes (v2.0.1)
+
+**2.0.1** — NuGet metadata/tags/README discoverability only (same APIs as 2.0.0).
+
+**2.0.0** — Multi-target `net8.0` / `net9.0` / `net10.0`; fluent `Eval.Direct()` / `Judge()` / `Grounding()`; assertions; DI/Options; JSON/JSONL suites + HTML/JSON reports; Azure OpenAI; classic API unchanged.
+
+Full details: [`CHANGELOG.md`](CHANGELOG.md). Install: `dotnet add package STAF.LLMEval --version 2.0.1`

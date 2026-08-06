@@ -19,7 +19,7 @@ When the user says **implement phase N**, **do phase N**, **ship phase N**, or *
 
 | Field | Value |
 |-------|--------|
-| Current shipped | **v2.0.0** (Phase 1 Adoption) |
+| Current shipped | **v2.0.1** (Phase 1 Adoption + metadata) |
 | Next to implement | **Phase 2 → v2.1.0 Evaluation Engine & Datasets** |
 | After Phase 2 | Phase 3 → v2.2.0 Test Framework & CI Reporting |
 

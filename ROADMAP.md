@@ -15,7 +15,7 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 
 ## Phase 1 — v2.0.0 Adoption (**Done**)
 
-**Shipped in:** package version `2.0.0` (tag when publishing: `v2.0.0`)
+**Shipped in:** package version `2.0.0` (feature); patch `2.0.1` (NuGet metadata/tags). Tag when publishing: `v2.0.1`
 
 **Goal:** A .NET developer can evaluate LLM output in an xUnit test in under 5 minutes on .NET 8+, with a CI-friendly report—without rewriting existing `EvaluateAsync` callers.
 

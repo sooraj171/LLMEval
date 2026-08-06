@@ -1,10 +1,27 @@
 # STAF.LLMEval
 
-.NET library for evaluating LLM responses against golden outputs and reference documents.
+**STAF.LLMEval** is a .NET **LLM evaluation** and **AI testing** library for validating **generative AI** responses (ChatGPT, GPT, Gemini, Ollama, Azure OpenAI) in unit tests and CI pipelines.
 
-**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 2.0.0 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
+Score outputs with **exact match**, **keyword**, **TF-IDF semantic similarity**, **LLM-as-judge**, and **RAG grounding / hallucination detection**. Includes a fluent `Eval` API, test assertions, Options/DI, JSON/JSONL evaluation suites, and HTML/JSON reports.
 
-Supports **Direct** match, **LLM-as-judge**, and **GroundedAnswerCheck** (hallucination / grounding), plus a fluent API, assertions, DI/Options, and JSON/HTML suite reports.
+**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 2.0.1 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
+
+## Release notes — 2.0.1
+
+- **Discoverability:** richer NuGet title, description, tags, and release notes for LLM / AI evaluation search  
+- **No API changes** from 2.0.0  
+
+### Included from 2.0.0
+
+- **Multi-target** .NET 8 / 9 / 10  
+- **Fluent evaluation API:** `Eval.Direct()`, `Eval.Judge()`, `Eval.Grounding()`  
+- **Assertions:** `ShouldPass()`, `ShouldScoreAbove()`, `ShouldBeGrounded()`  
+- **DI:** `services.AddLLMEval(...)` + `LLMEvalOptions`  
+- **Suites & reports:** JSON/JSONL → `report.html` / `report.json`  
+- **Azure OpenAI** (plus OpenAI, Gemini, Ollama)  
+- **Backward compatible** with `EvaluationRequest` / `EvaluateAsync`
+
+Full changelog: https://github.com/sooraj171/LLMEval/blob/main/CHANGELOG.md
 
 ## Installation
 
@@ -238,4 +255,4 @@ Formats: JSON array, JSONL, or `{ "cases": [ ... ] }`.
 - Prefer `Temperature=0` for deterministic judge / grounding runs in CI.
 - Default semantic matching uses **TF-IDF**. `GloveModel` / `SemanticSimilarityEvaluator` are obsolete and not used by `AdvancedEvaluationService`.
 - Repository: https://github.com/sooraj171/LLMEval
-- Changelog / migration: see repo `CHANGELOG.md` (v2.0.0 keeps the classic `EvaluateAsync` API).
+- Changelog / migration: see repo `CHANGELOG.md` (v2.0.0+ keeps the classic `EvaluateAsync` API).

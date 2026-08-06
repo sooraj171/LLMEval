@@ -1,0 +1,40 @@
+---
+description: STAF.LLMEval release phases — when user says implement phase N, follow ROADMAP.md and update status after shipping
+alwaysApply: true
+---
+
+# STAF.LLMEval release phases
+
+## Commands
+
+When the user says **implement phase N**, **do phase N**, **ship phase N**, or **implement vX.Y**:
+
+1. Read `ROADMAP.md` (repo root) for that phase’s **In scope**, **Out of scope**, **Definition of Done**, and **Key files**.
+2. Implement only that phase. Do not pull in later phases.
+3. Preserve backward compatibility unless the phase explicitly allows breaks (and the user approved).
+4. Prefer incremental, production-ready changes over large refactors.
+5. After the phase is done: update `ROADMAP.md` status, bump version notes in CHANGELOG if present, and refresh the **Status** section below in this rule.
+
+## Status (update after every phase)
+
+| Field | Value |
+|-------|--------|
+| Current shipped | **v2.0.0** (Phase 1 Adoption) |
+| Next to implement | **Phase 2 → v2.1.0 Evaluation Engine & Datasets** |
+| After Phase 2 | Phase 3 → v2.2.0 Test Framework & CI Reporting |
+
+## Non-negotiables
+
+- Package id stays `STAF.LLMEval` until a later phase splits packages.
+- Keep `IEvaluationService.EvaluateAsync` / `EvaluationRequest` working unless a phase says otherwise.
+- Multi-TFM and CI must stay green once Phase 1 lands (`net8.0;net9.0;net10.0`).
+- Do not invent scope: if unclear, ask; default to ROADMAP.md.
+
+## After completing a phase
+
+Update in the same PR/session:
+
+1. `ROADMAP.md` — mark phase **Done**, set next phase **Next**, note version tag.
+2. This rule’s **Status** table — Current shipped / Next to implement / After.
+3. `CHANGELOG.md` — release notes + migration notes.
+4. Briefly tell the user the next phrase to run (e.g. “implement phase 2”).

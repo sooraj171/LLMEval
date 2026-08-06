@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace LLMEval
 {
+    /// <summary>Optional GloVe embedding loader. Not used by <see cref="AdvancedEvaluationService"/>; prefer TF-IDF via MatchingType = "semantic".</summary>
+    [Obsolete("Not wired into AdvancedEvaluationService. Use MatchingType = \"semantic\" (TF-IDF) instead. Will be removed or reintroduced as an optional plugin in a later release.")]
     public class GloveModel
     {
         private readonly Dictionary<string, float[]> _embeddings = new();

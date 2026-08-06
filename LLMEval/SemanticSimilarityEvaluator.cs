@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace LLMEval
 {
+    /// <summary>GloVe-based similarity. Not used by the main evaluation service; prefer TF-IDF semantic matching.</summary>
+    [Obsolete("Not wired into AdvancedEvaluationService. Use MatchingType = \"semantic\" (TF-IDF) instead.")]
     public class SemanticSimilarityEvaluator
     {
         private readonly GloveModel _gloveModel;

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "capital-exact",
+    "question": "What is the capital of France?",
+    "actual": "Paris",
+    "expected": "Paris",
+    "evaluationType": "DirectEvaluation",
+    "matchingType": "exact",
+    "threshold": 1.0
+  },
+  {
+    "id": "capital-keyword",
+    "question": "What is the capital of France?",
+    "actual": "Paris is the capital of France",
+    "expected": "Paris France",
+    "evaluationType": "DirectEvaluation",
+    "matchingType": "keyword",
+    "threshold": 0.5
+  }
+]

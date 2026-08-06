@@ -10,23 +10,42 @@ namespace LLMEval
         private readonly IAiProviderFactory _providerFactory;
         private readonly HttpClient _httpClient;
         private readonly TfidfSimilarity _tfidfSimilarity;
+        private readonly LLMEvalOptions? _options;
 
         public AdvancedEvaluationService(IAiProviderFactory providerFactory)
-            : this(providerFactory, new HttpClient())
+            : this(providerFactory, new HttpClient(), null)
         {
         }
 
         public AdvancedEvaluationService(IAiProviderFactory providerFactory, HttpClient httpClient)
+            : this(providerFactory, httpClient, null)
+        {
+        }
+
+        public AdvancedEvaluationService(IAiProviderFactory providerFactory, HttpClient httpClient, LLMEvalOptions? options)
         {
             _providerFactory = providerFactory ?? throw new ArgumentNullException(nameof(providerFactory));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _tfidfSimilarity = new TfidfSimilarity();
+            _options = options;
+        }
+
+        /// <summary>Maps <see cref="EvaluationRequest.ModelName"/> into Configuration["Model"] when Model is unset.</summary>
+        public static void ApplyModelNameToConfiguration(EvaluationRequest request)
+        {
+            if (request == null) return;
+            if (string.IsNullOrWhiteSpace(request.ModelName)) return;
+            if (!request.Configuration.ContainsKey("Model") || string.IsNullOrWhiteSpace(request.Configuration["Model"]))
+                request.Configuration["Model"] = request.ModelName;
         }
 
         public async Task<EvaluationResult> EvaluateAsync(EvaluationRequest request, CancellationToken cancellationToken = default)
         {
             try
             {
+                ApplyDefaults(request);
+                ApplyModelNameToConfiguration(request);
+
                 IAiProvider provider = _providerFactory.CreateProvider(request.ProviderType, _httpClient);
 
                 if (request.EvaluationType == EvaluationType.GroundedAnswerCheck)
@@ -47,6 +66,23 @@ namespace LLMEval
                     IsPassed = false,
                     Details = $"Evaluation failed: {ex.Message}"
                 };
+            }
+        }
+
+        private void ApplyDefaults(EvaluationRequest request)
+        {
+            if (_options == null) return;
+
+            if (string.IsNullOrWhiteSpace(request.Endpoint) && !string.IsNullOrWhiteSpace(_options.Endpoint))
+                request.Endpoint = _options.Endpoint;
+
+            if (request.PassThreshold <= 0 && _options.DefaultPassThreshold > 0)
+                request.PassThreshold = _options.DefaultPassThreshold;
+
+            foreach (var kv in _options.ToConfigurationDictionary())
+            {
+                if (!request.Configuration.ContainsKey(kv.Key))
+                    request.Configuration[kv.Key] = kv.Value;
             }
         }
 
@@ -91,7 +127,7 @@ namespace LLMEval
                 string jsonResponse;
                 try
                 {
-                    jsonResponse = await provider.GetResponseAsync(request.Endpoint, prompt, config, cancellationToken);
+                    jsonResponse = await provider.GetResponseAsync(request.Endpoint, prompt, config, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -157,6 +193,7 @@ namespace LLMEval
                 ProviderType.Gemini => LLMResponseParser.GetRawContentFromGeminiResponse(jsonResponse),
                 ProviderType.Ollama => LLMResponseParser.GetRawContentFromOllamaResponse(jsonResponse),
                 ProviderType.OpenAI => LLMResponseParser.GetRawContentFromOpenAIResponse(jsonResponse),
+                ProviderType.AzureOpenAI => LLMResponseParser.GetRawContentFromOpenAIResponse(jsonResponse),
                 _ => null
             };
         }
@@ -195,7 +232,7 @@ namespace LLMEval
                 {
                     parsedResult = LLMResponseParser.ParseOllamaEvaluationResponse(llmResponseJson);
                 }
-                else if (request.ProviderType == ProviderType.OpenAI)
+                else if (request.ProviderType == ProviderType.OpenAI || request.ProviderType == ProviderType.AzureOpenAI)
                 {
                     parsedResult = LLMResponseParser.ParseOpenAIEvaluationResponse(llmResponseJson);
                 }
@@ -210,11 +247,11 @@ namespace LLMEval
 
                 if (request.IsReferenceDoc && (parsedResult.Description?.ToLower().Contains("not found in document") ?? false))
                 {
-                    isPassed = false; // Or adjust score accordingly
+                    isPassed = false;
                     score = 0;
                 }
 
-                string confidence = score >=0.8 ? "High" : score >= .5 ? "Medium" : "Low";
+                string confidence = score >= 0.8 ? "High" : score >= .5 ? "Medium" : "Low";
 
                 return new EvaluationResult
                 {
@@ -273,7 +310,7 @@ namespace LLMEval
             var responseKeywords = response.ToLower().Split(new[] { ' ', '-', ',', '.', ';', ':' }, StringSplitOptions.RemoveEmptyEntries).ToHashSet();
             var goldenKeywords = golden.ToLower().Split(new[] { ' ', '-', ',', '.', ';', ':' }, StringSplitOptions.RemoveEmptyEntries).ToHashSet();
 
-            if (!goldenKeywords.Any()) return 1.0; // If no expected keywords, consider it a match
+            if (!goldenKeywords.Any()) return 1.0;
 
             int matchedKeywords = 0;
             foreach (var keyword in goldenKeywords)
@@ -286,6 +323,5 @@ namespace LLMEval
 
             return (double)matchedKeywords / goldenKeywords.Count;
         }
-
     }
 }

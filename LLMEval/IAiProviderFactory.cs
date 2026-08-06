@@ -18,6 +18,8 @@ namespace LLMEval
                     return new OpenAIProvider(httpClient);
                 case ProviderType.Gemini:
                     return new GeminiProvider(httpClient);
+                case ProviderType.AzureOpenAI:
+                    return new AzureOpenAIProvider(httpClient);
                 default:
                     throw new ArgumentException($"Unsupported provider type: {providerType}");
             }

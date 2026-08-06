@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using LLMEval;
 
 namespace LLMEval.Tests;
@@ -162,6 +163,9 @@ public class AiProviderFactoryTests
 
         var gemini = factory.CreateProvider(ProviderType.Gemini, httpClient);
         Assert.IsType<GeminiProvider>(gemini);
+
+        var azure = factory.CreateProvider(ProviderType.AzureOpenAI, httpClient);
+        Assert.IsType<AzureOpenAIProvider>(azure);
     }
 
     [Fact]
@@ -307,14 +311,30 @@ public class ResponseStatementSplitterTests
 /// <summary>Test double: returns predefined JSON responses in order so GroundedAnswerCheck can be tested without a live API.</summary>
 internal class MockAiProvider : IAiProvider
 {
-    private int _index;
-    public List<string> Responses { get; } = new();
+    private readonly ConcurrentQueue<string> _queue = new();
+
+    public void Enqueue(params string[] responses)
+    {
+        foreach (var r in responses)
+            _queue.Enqueue(r);
+    }
+
+    public List<string> Responses
+    {
+        get => _queue.ToList();
+        set
+        {
+            while (_queue.TryDequeue(out _)) { }
+            foreach (var r in value)
+                _queue.Enqueue(r);
+        }
+    }
 
     public Task<string> GetResponseAsync(string endpoint, string prompt, Dictionary<string, string> configuration, CancellationToken cancellationToken = default)
     {
-        if (_index >= Responses.Count)
-            return Task.FromResult("{\"response\": \"UNSUPPORTED\", \"done\": true}");
-        return Task.FromResult(Responses[_index++]);
+        if (_queue.TryDequeue(out var next))
+            return Task.FromResult(next);
+        return Task.FromResult("{\"response\": \"UNSUPPORTED\", \"done\": true}");
     }
 }
 
@@ -334,8 +354,11 @@ public class GroundedAnswerCheckTests
     public async Task EvaluateAsync_GroundedAnswerCheck_AllSupported_ReturnsHighScoreAndLowRisk()
     {
         var factory = new MockAiProviderFactory();
-        factory.Provider.Responses.Add(OllamaJson("SUPPORTED"));
-        factory.Provider.Responses.Add(OllamaJson("SUPPORTED"));
+        factory.Provider.Responses = new List<string>
+        {
+            OllamaJson("SUPPORTED"),
+            OllamaJson("SUPPORTED")
+        };
 
         var service = new AdvancedEvaluationService(factory);
         var request = new EvaluationRequest
@@ -366,8 +389,11 @@ public class GroundedAnswerCheckTests
     public async Task EvaluateAsync_GroundedAnswerCheck_OneUnsupported_ReturnsHalfScoreAndHighRisk()
     {
         var factory = new MockAiProviderFactory();
-        factory.Provider.Responses.Add(OllamaJson("SUPPORTED"));
-        factory.Provider.Responses.Add(OllamaJson("UNSUPPORTED"));
+        factory.Provider.Responses = new List<string>
+        {
+            OllamaJson("SUPPORTED"),
+            OllamaJson("UNSUPPORTED")
+        };
 
         var service = new AdvancedEvaluationService(factory);
         var request = new EvaluationRequest
@@ -396,7 +422,7 @@ public class GroundedAnswerCheckTests
     public async Task EvaluateAsync_GroundedAnswerCheck_UsesReferenceDocuments_WhenProvided()
     {
         var factory = new MockAiProviderFactory();
-        factory.Provider.Responses.Add(OllamaJson("SUPPORTED"));
+        factory.Provider.Responses = new List<string> { OllamaJson("SUPPORTED") };
 
         var service = new AdvancedEvaluationService(factory);
         var request = new EvaluationRequest

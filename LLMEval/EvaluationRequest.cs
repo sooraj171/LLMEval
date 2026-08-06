@@ -4,7 +4,8 @@ namespace LLMEval
     {
         Ollama,
         OpenAI,
-        Gemini
+        Gemini,
+        AzureOpenAI
     }
     public enum EvaluationType
     {

@@ -20,14 +20,19 @@ jobs:
 
       - name: Restore
         run: |
-          dotnet restore LLMEval/LLMEval.csproj
+          dotnet restore LLMEval.sln
           dotnet restore LLMEval.Tests/LLMEval.Tests.csproj
 
       - name: Test
         run: dotnet test LLMEval.Tests/LLMEval.Tests.csproj --configuration Release --verbosity normal
 
       - name: Pack
-        run: dotnet pack LLMEval/LLMEval.csproj --configuration Release --output ./nupkg
+        run: |
+          mkdir -p ./nupkg
+          dotnet pack LLMEval.Abstractions/LLMEval.Abstractions.csproj --configuration Release --output ./nupkg
+          dotnet pack LLMEval.Core/LLMEval.Core.csproj --configuration Release --output ./nupkg
+          dotnet pack LLMEval/LLMEval.csproj --configuration Release --output ./nupkg
+          dotnet pack LLMEval.SemanticKernel/LLMEval.SemanticKernel.csproj --configuration Release --output ./nupkg
 
       - name: List generated packages
         run: ls -la nupkg
@@ -35,15 +40,16 @@ jobs:
       - name: Publish to NuGet
         shell: bash
         run: |
-          packagePath=$(ls ./nupkg/STAF.LLMEval.*.nupkg | grep -v snupkg | head -n 1)
-          if [ -n "$packagePath" ]; then
+          set -euo pipefail
+          for packagePath in ./nupkg/STAF.LLMEval*.nupkg; do
+            case "$packagePath" in
+              *.snupkg) continue ;;
+            esac
             echo "Publishing package: $packagePath"
             dotnet nuget push "$packagePath" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-            symbols=$(ls ./nupkg/STAF.LLMEval.*.snupkg 2>/dev/null | head -n 1 || true)
-            if [ -n "$symbols" ]; then
-              dotnet nuget push "$symbols" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-            fi
-          else
-            echo "No package found matching STAF.LLMEval.*.nupkg"
-            exit 1
-          fi
+          done
+          for symbols in ./nupkg/STAF.LLMEval*.snupkg; do
+            [ -e "$symbols" ] || continue
+            echo "Publishing symbols: $symbols"
+            dotnet nuget push "$symbols" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          done

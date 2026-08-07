@@ -8,7 +8,7 @@ public class LLMEvalOptions
     /// <summary>Default provider used when a request does not specify one.</summary>
     public ProviderType DefaultProvider { get; set; } = ProviderType.OpenAI;
 
-    /// <summary>API endpoint (required for Azure OpenAI, Gemini, Ollama; optional for OpenAI).</summary>
+    /// <summary>API endpoint (required for Azure OpenAI, Gemini, Ollama; optional for OpenAI / Claude / Groq / Mistral).</summary>
     public string Endpoint { get; set; } = string.Empty;
 
     /// <summary>API key for cloud providers.</summary>

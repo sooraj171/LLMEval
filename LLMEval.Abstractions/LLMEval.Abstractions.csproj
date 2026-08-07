@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>LLMEval</RootNamespace>
+    <AssemblyName>LLMEval.Abstractions</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <PackageId>STAF.LLMEval.Abstractions</PackageId>
+    <Version>3.0.0</Version>
+    <Title>STAF.LLMEval.Abstractions — LLM evaluation contracts</Title>
+    <Authors>Sooraj Ramachandran</Authors>
+    <Company>Sooraj Ramachandran</Company>
+    <Product>STAF.LLMEval</Product>
+    <Description>Abstractions and DTOs for STAF.LLMEval: IEvaluationService, IAiProvider, EvaluationRequest/Result, metrics contracts, and options. Prefer the STAF.LLMEval meta-package for one-line install.</Description>
+    <PackageTags>LLM;LLM-evaluation;AI-testing;abstractions;STAF</PackageTags>
+    <PackageReleaseNotes>STAF.LLMEval.Abstractions 3.0.0 — Initial split from STAF.LLMEval. See CHANGELOG.md.</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/sooraj171/LLMEval</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/sooraj171/LLMEval</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright © Sooraj Ramachandran 2026</Copyright>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

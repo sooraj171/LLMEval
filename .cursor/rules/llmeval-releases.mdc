@@ -19,13 +19,13 @@ When the user says **implement phase N**, **do phase N**, **ship phase N**, or *
 
 | Field | Value |
 |-------|--------|
-| Current shipped | **v2.2.0** (Phase 3 Test Framework & CI Reporting) |
-| Next to implement | **Phase 4 → v3.0.0 Architecture & Ecosystem** |
-| After Phase 4 | Phase 5 → v3.x Community & Polish |
+| Current shipped | **v3.0.0** (Phase 4 Architecture & Ecosystem) |
+| Next to implement | **Phase 5 → v3.x Community & Polish** |
+| After Phase 5 | Maintenance / new phases as needed |
 
 ## Non-negotiables
 
-- Package id stays `STAF.LLMEval` until a later phase splits packages.
+- Package id **STAF.LLMEval** remains the recommended one-line install (meta-package after Phase 4).
 - Keep `IEvaluationService.EvaluateAsync` / `EvaluationRequest` working unless a phase says otherwise.
 - Multi-TFM and CI must stay green once Phase 1 lands (`net8.0;net9.0;net10.0`).
 - Do not invent scope: if unclear, ask; default to ROADMAP.md.

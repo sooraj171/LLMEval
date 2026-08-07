@@ -4,6 +4,36 @@ All notable changes to **STAF.LLMEval** (NuGet: [STAF.LLMEval](https://www.nuget
 
 STAF.LLMEval is a .NET LLM evaluation / AI testing framework for AI response evaluation, LLM-as-judge scoring, RAG grounding, and hallucination detection.
 
+## [3.0.0] - 2026-08-06
+
+### Summary
+
+Architecture & ecosystem: incremental Core/Abstractions package split with BC type-forwards in the `STAF.LLMEval` meta-package, Claude/Groq/Mistral providers, optional Semantic Kernel integration, and ASP.NET configuration helpers—while keeping one-line install and classic `EvaluateAsync` source compatibility.
+
+### Added
+
+- **Packages:** `STAF.LLMEval.Abstractions`, `STAF.LLMEval.Core`; `STAF.LLMEval` remains the recommended meta-package (`TypeForwardedTo` shims)
+- **Providers:** `ProviderType.Claude` (Anthropic Messages API), `Groq`, `Mistral` (OpenAI-compatible)
+- **`STAF.LLMEval.SemanticKernel`:** `SemanticKernelChatProvider`, `SemanticKernelProviderFactory`, `AddLLMEvalSemanticKernel()`
+- **ASP.NET helper:** `services.AddLLMEval(IConfiguration)` binds section `LLMEval`
+- Docs: [`docs/PACKAGES.md`](docs/PACKAGES.md), [`docs/MIGRATION-v3.md`](docs/MIGRATION-v3.md)
+
+### Changed
+
+- Package version **3.0.0**
+- Public types live in `LLMEval.Abstractions` / `LLMEval.Core` assemblies (namespaces remain `LLMEval`)
+
+### Not added (by design)
+
+- Full Aspire hosting package / Playwright / MCP (defer until demand; config binding covers host apps)
+- Remaining cloud providers from the master list (Bedrock, Vertex, Cohere, …)
+
+### Migration from 2.2.x
+
+- Rebuild after upgrade (assembly split). Source APIs unchanged for typical callers.
+- See [`docs/MIGRATION-v3.md`](docs/MIGRATION-v3.md)
+- Exhaustive `switch` on `ProviderType` must handle Claude / Groq / Mistral
+
 ## [2.2.0] - 2026-08-06
 
 ### Summary
@@ -99,18 +129,7 @@ Adoption release: multi-TFM (.NET 8/9/10), fluent Eval API, assertions, DI/Optio
 - `ModelName` is applied to `Configuration["Model"]` when Model is unset
 - Grounding judge calls remain sequential (correct claim ordering); suite runs use bounded parallelism
 
-### Obsolete
-
-- `GloveModel` and `SemanticSimilarityEvaluator` — not wired into `AdvancedEvaluationService`; use `MatchingType = "semantic"` (TF-IDF)
-
 ### Migration from 1.x
 
-- Existing `EvaluationRequest` + `EvaluateAsync` code continues to work
-- Prefer `Eval.*` and assertions for new tests
-- If you only targeted `net10.0`, you can now also consume from net8/net9 projects
-- Fix any docs/code that used `IsReferenceDocument` — the property is `IsReferenceDoc`
-
-## [1.5.0] - prior
-
-- DirectEvaluation, LLMAsJudge, GroundedAnswerCheck
-- Providers: OpenAI, Gemini, Ollama
+- Existing `EvaluateAsync` / `EvaluationRequest` call sites continue to work
+- Prefer `Eval.*` + assertions for new tests; suite reports are additive

@@ -27,7 +27,7 @@ public sealed class MetricResult
 }
 
 /// <summary>
-/// Pluggable DirectEvaluation metric. Register custom metrics on <see cref="MetricRegistry"/>
+/// Pluggable DirectEvaluation metric. Register custom metrics on the metric registry
 /// without forking the core evaluation service.
 /// </summary>
 public interface IEvaluationMetric

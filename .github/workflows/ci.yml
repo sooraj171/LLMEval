@@ -26,7 +26,7 @@ jobs:
 
       - name: Restore
         run: |
-          dotnet restore LLMEval/LLMEval.csproj
+          dotnet restore LLMEval.sln
           dotnet restore LLMEval.Tests/LLMEval.Tests.csproj
           dotnet restore samples/MinimalXunit/MinimalXunit.csproj
 

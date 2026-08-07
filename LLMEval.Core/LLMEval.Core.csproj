@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>LLMEval</RootNamespace>
+    <AssemblyName>LLMEval.Core</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <PackageId>STAF.LLMEval.Core</PackageId>
+    <Version>3.0.0</Version>
+    <Title>STAF.LLMEval.Core — LLM evaluation engine</Title>
+    <Authors>Sooraj Ramachandran</Authors>
+    <Company>Sooraj Ramachandran</Company>
+    <Product>STAF.LLMEval</Product>
+    <Description>Core evaluation engine for STAF.LLMEval: fluent Eval API, metrics, suite/reports, assertions, and providers (OpenAI, Azure OpenAI, Gemini, Ollama, Claude, Groq, Mistral). Prefer the STAF.LLMEval meta-package for one-line install.</Description>
+    <PackageTags>LLM;LLM-evaluation;LLM-as-judge;AI-testing;RAG;Claude;Groq;Mistral;OpenAI;Gemini;Ollama;STAF</PackageTags>
+    <PackageReleaseNotes>STAF.LLMEval.Core 3.0.0 — Architecture split + Claude/Groq/Mistral. See CHANGELOG.md.</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/sooraj171/LLMEval</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/sooraj171/LLMEval</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright © Sooraj Ramachandran 2026</Copyright>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Readme.md" Pack="true" PackagePath="README.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LLMEval.Abstractions\LLMEval.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

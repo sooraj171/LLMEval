@@ -2,10 +2,10 @@
 
 **STAF.LLMEval** is a .NET **LLM evaluation** and **AI testing framework** for scoring and validating **GenAI / ChatGPT / GPT** responses in **unit tests** and **CI/CD**.
 
-Use it to run **exact match**, **semantic similarity**, **LLM-as-judge**, and **RAG groundedness / hallucination detection** against golden answers or reference documents—with a fluent API, assertions, evaluation suites, and HTML/JSON reports. Works with **OpenAI**, **Azure OpenAI**, **Gemini**, and **Ollama** on **.NET 8 / 9 / 10**.
+Use it to run **exact match**, **semantic similarity**, **LLM-as-judge**, and **RAG groundedness / hallucination detection** against golden answers or reference documents—with a fluent API, assertions, evaluation suites, and HTML/JSON reports. Works with **OpenAI**, **Azure OpenAI**, **Gemini**, **Ollama**, **Claude**, **Groq**, and **Mistral** on **.NET 8 / 9 / 10**.
 
 [![NuGet](https://img.shields.io/nuget/v/STAF.LLMEval.svg)](https://www.nuget.org/packages/STAF.LLMEval)
-**v2.2.0** · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT · [Release notes](CHANGELOG.md)
+**v3.0.0** · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT · [Release notes](CHANGELOG.md) · [Packages](docs/PACKAGES.md) · [Migrate to v3](docs/MIGRATION-v3.md)
 
 ## Who is this for?
 
@@ -71,6 +71,13 @@ await Eval.Grounding()
     .WithModel("llama3.2")
     .EvaluateAsync();
 
+// Claude / Groq / Mistral
+await Eval.Judge()
+    .WithQuestion(q).WithResponse(actual).WithExpected(expected)
+    .WithProvider(ProviderType.Claude)
+    .WithApiKey(anthropicKey).WithModel("claude-3-5-haiku-latest")
+    .EvaluateAsync();
+
 // Assertions
 result.ShouldPass(because: "exact capital");
 result.ShouldScoreAbove(0.8);
@@ -94,10 +101,15 @@ services.AddLLMEval(options =>
     options.DefaultPassThreshold = 0.8;
 });
 
+// ASP.NET / Aspire host: bind section "LLMEval"
+services.AddLLMEval(builder.Configuration);
+
 var eval = sp.GetRequiredService<IEvaluationService>();
 ```
 
 Classic API still works: `EvaluationRequest` + `AdvancedEvaluationService.EvaluateAsync`.
+
+Optional Semantic Kernel: `dotnet add package STAF.LLMEval.SemanticKernel` then `services.AddLLMEvalSemanticKernel(...)`.
 
 ## Suite reports (CI)
 
@@ -156,6 +168,9 @@ var service = new AdvancedEvaluationService(new AiProviderFactory(), new HttpCli
 | **Azure OpenAI** | Resource URL + deployment name in `Model` |
 | **Gemini** | Requires endpoint + API key |
 | **Ollama** | Local, e.g. `http://localhost:11434` |
+| **Claude** | Anthropic Messages API |
+| **Groq** | OpenAI-compatible (`api.groq.com`) |
+| **Mistral** | OpenAI-compatible (`api.mistral.ai`) |
 
 Optional cost estimate when usage is present: set `Configuration["InputCostPer1M"]` / `OutputCostPer1M` (USD per 1M tokens).
 
@@ -165,17 +180,21 @@ Optional cost estimate when usage is present: set `Configuration["InputCostPer1M
 |-----|---------|
 | [`samples/MinimalXunit`](samples/MinimalXunit) | Copy-paste xUnit sample (no API keys) + traits + baseline CI check |
 | [`samples/ci`](samples/ci) | GitHub Actions + Azure DevOps templates (threshold fail + artifacts) |
+| [`docs/PACKAGES.md`](docs/PACKAGES.md) | Multi-package layout (meta / Core / Abstractions / SK) |
+| [`docs/MIGRATION-v3.md`](docs/MIGRATION-v3.md) | Upgrade guide from 2.x → 3.0 |
 | [`LLMEval/Readme.md`](LLMEval/Readme.md) | Full package / API guide (also on NuGet) |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release notes |
-| [`ROADMAP.md`](ROADMAP.md) | Release phases (Phase 3 done; Phase 4 next) |
+| [`ROADMAP.md`](ROADMAP.md) | Release phases (Phase 4 done; Phase 5 next) |
 
 ## Backward compatibility
 
-v2.2 keeps `IEvaluationService.EvaluateAsync` / `EvaluationRequest`. Prefer `Eval.*` and assertions for new code.
+v3 keeps `IEvaluationService.EvaluateAsync` / `EvaluationRequest` (rebuild required after assembly split). Prefer `Eval.*` and assertions for new code.
 
 `EvaluationRequest.ModelName` maps to `Configuration["Model"]` when Model is unset. Semantic Direct matching uses **TF-IDF** (`MatchingType = "semantic"`); the old GloVe helpers are obsolete. Unknown matching types fail with a clear error (register a custom metric instead of relying on exact fallback).
 
-## Release notes (v2.2.0)
+## Release notes (v3.0.0)
+
+**3.0.0** — Core/Abstractions split + meta package type-forwards; Claude / Groq / Mistral; optional Semantic Kernel package; `AddLLMEval(IConfiguration)`.
 
 **2.2.0** — Richer asserts + `ShouldMeetPassRate`, `EvalTraits` / suite tags, `LLMEVAL_REPORT_DIR`, GitHub Actions & Azure DevOps CI templates with report artifacts.
 
@@ -185,4 +204,4 @@ v2.2 keeps `IEvaluationService.EvaluateAsync` / `EvaluationRequest`. Prefer `Eva
 
 **2.0.0** — Multi-target `net8.0` / `net9.0` / `net10.0`; fluent `Eval.Direct()` / `Judge()` / `Grounding()`; assertions; DI/Options; JSON/JSONL suites + HTML/JSON reports; Azure OpenAI; classic API unchanged.
 
-Full details: [`CHANGELOG.md`](CHANGELOG.md). Install: `dotnet add package STAF.LLMEval --version 2.2.0`
+Full details: [`CHANGELOG.md`](CHANGELOG.md). Install: `dotnet add package STAF.LLMEval --version 3.0.0`

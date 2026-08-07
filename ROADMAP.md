@@ -6,8 +6,8 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 |-------|---------|------|--------|
 | — | v1.5.0 | Baseline (Direct / LLM-as-judge / Grounding + OpenAI/Gemini/Ollama) | Shipped |
 | 1 | v2.0.0 | Adoption | **Done** |
-| 2 | v2.1.0 | Evaluation Engine & Datasets | **Next** |
-| 3 | v2.2.0 | Test Framework & CI Reporting | Planned |
+| 2 | v2.1.0 | Evaluation Engine & Datasets | **Done** |
+| 3 | v2.2.0 | Test Framework & CI Reporting | **Next** |
 | 4 | v3.0.0 | Architecture & Ecosystem | Planned |
 | 5 | v3.x | Community & Polish | Planned |
 
@@ -90,7 +90,9 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 
 ---
 
-## Phase 2 — v2.1.0 Evaluation Engine & Datasets (**Next**)
+## Phase 2 — v2.1.0 Evaluation Engine & Datasets (**Done**)
+
+**Shipped in:** package version `2.1.0`. Tag when publishing: `v2.1.0`
 
 ### In scope
 
@@ -108,15 +110,15 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 
 ### Definition of Done
 
-- Custom or built-in metrics registerable without forking core
-- Baseline diff in CI sample
-- Docs + CHANGELOG; ROADMAP marks Phase 3 next
+- [x] Custom or built-in metrics registerable without forking core
+- [x] Baseline diff in CI sample
+- [x] Docs + CHANGELOG; ROADMAP marks Phase 3 next
 
 ---
 
 ## Phase 3 — v2.2.0 Test Framework & CI Reporting
 
-**Status:** Planned
+**Status:** **Next**
 
 ### In scope
 

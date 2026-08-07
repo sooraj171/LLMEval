@@ -172,6 +172,54 @@ public sealed class DirectEvaluationBuilder : EvaluationBuilderBase<DirectEvalua
         return this;
     }
 
+    /// <summary>Validates that <paramref name="actual"/> is parseable JSON.</summary>
+    public DirectEvaluationBuilder Json(string actual)
+    {
+        Request.AiResponse = actual;
+        Request.MatchingType = "json";
+        Request.PassThreshold = 1.0;
+        return this;
+    }
+
+    /// <summary>Validates <paramref name="actual"/> JSON against a JSON Schema.</summary>
+    public DirectEvaluationBuilder Schema(string actual, string jsonSchema)
+    {
+        Request.AiResponse = actual;
+        Request.Schema = jsonSchema;
+        Request.GoldenOutput = jsonSchema;
+        Request.MatchingType = "schema";
+        Request.PassThreshold = 1.0;
+        return this;
+    }
+
+    /// <summary>Scores relevance of the response to the question (TF-IDF).</summary>
+    public DirectEvaluationBuilder Relevance(string question, string actual, string? expected = null)
+    {
+        Request.Question = question;
+        Request.AiResponse = actual;
+        if (expected != null) Request.GoldenOutput = expected;
+        Request.MatchingType = "relevance";
+        return this;
+    }
+
+    /// <summary>Lightweight heuristic grounding (no LLM) of actual vs reference.</summary>
+    public DirectEvaluationBuilder GroundedHeuristic(string actual, string reference)
+    {
+        Request.AiResponse = actual;
+        Request.GoldenOutput = reference;
+        Request.MatchingType = "grounded-heuristic";
+        return this;
+    }
+
+    /// <summary>Uses a custom or built-in metric by name (must be registered on the service registry).</summary>
+    public DirectEvaluationBuilder WithMetric(string metricName, string actual, string expected)
+    {
+        Request.AiResponse = actual;
+        Request.GoldenOutput = expected;
+        Request.MatchingType = metricName;
+        return this;
+    }
+
     public Task<EvaluationResult> EvaluateAsync(CancellationToken cancellationToken = default)
         => EvaluateCoreAsync(cancellationToken);
 }

@@ -10,23 +10,24 @@
 
     <!-- NuGet package metadata (discoverability) -->
     <PackageId>STAF.LLMEval</PackageId>
-    <Version>2.0.1</Version>
+    <Version>2.1.0</Version>
     <Title>STAF.LLMEval — .NET LLM Evaluation and AI Testing Framework</Title>
     <Authors>Sooraj Ramachandran</Authors>
     <Company>Sooraj Ramachandran</Company>
     <Product>STAF.LLMEval</Product>
-    <Description>STAF.LLMEval is a .NET library and AI testing framework for evaluating LLM and GenAI responses in unit tests and CI/CD. Score AI outputs with exact match, keyword overlap, TF-IDF semantic similarity, LLM-as-judge, and RAG groundedness / hallucination detection. Includes fluent Eval API, assertions (ShouldPass, ShouldBeGrounded), Options/DI, JSON/JSONL evaluation suites, and HTML/JSON reports. Works with OpenAI, Azure OpenAI, Google Gemini, and Ollama. Ideal for ChatGPT/GPT evaluation, RAG quality checks, golden-dataset regression, and automated AI response validation on .NET 8/9/10.</Description>
-    <PackageTags>LLM;LLM-evaluation;LLM-as-judge;AI;AI-evaluation;AI-testing;GenAI;generative-AI;ChatGPT;GPT;OpenAI;Azure-OpenAI;AzureOpenAI;Gemini;Ollama;RAG;RAG-evaluation;grounding;groundedness;hallucination;hallucination-detection;semantic-similarity;TF-IDF;exact-match;golden-dataset;evaluation-suite;AI-assertions;unit-testing;xUnit;MSTest;NUnit;CI-CD;dotnet;net8;net9;net10;fluent-API;AI-response-evaluation;prompt-evaluation;model-evaluation;quality-assurance;QA;testing-framework;STAF</PackageTags>
+    <Description>STAF.LLMEval is a .NET library and AI testing framework for evaluating LLM and GenAI responses in unit tests and CI/CD. Score AI outputs with pluggable metrics (exact, keyword, TF-IDF semantic similarity, JSON/schema validation, relevance, heuristic grounding), LLM-as-judge, and RAG groundedness / hallucination detection. Includes fluent Eval API, assertions, Options/DI, JSON/JSONL/CSV evaluation suites, golden baseline comparison, HTML/JSON/Markdown/CSV reports, and best-effort token/cost usage. Works with OpenAI, Azure OpenAI, Google Gemini, and Ollama on .NET 8/9/10.</Description>
+    <PackageTags>LLM;LLM-evaluation;LLM-as-judge;AI;AI-evaluation;AI-testing;GenAI;generative-AI;ChatGPT;GPT;OpenAI;Azure-OpenAI;AzureOpenAI;Gemini;Ollama;RAG;RAG-evaluation;grounding;groundedness;hallucination;hallucination-detection;semantic-similarity;TF-IDF;exact-match;json-schema;relevance;golden-dataset;baseline-comparison;evaluation-suite;CSV;AI-assertions;unit-testing;xUnit;MSTest;NUnit;CI-CD;dotnet;net8;net9;net10;fluent-API;AI-response-evaluation;prompt-evaluation;model-evaluation;quality-assurance;QA;testing-framework;token-usage;STAF</PackageTags>
     <PackageReleaseNotes>
-STAF.LLMEval 2.0.1 — Metadata and discoverability update (same APIs as 2.0.0)
+STAF.LLMEval 2.1.0 — Evaluation Engine &amp; Datasets
 
-- Richer NuGet title, description, and search tags (LLM evaluation, RAG, hallucination, AI testing, etc.)
-- Expanded PackageReleaseNotes and README wording for NuGet / Google / AI search discovery
-- No breaking API changes from 2.0.0
-
-2.0.0 Adoption features (included):
-- Multi-target net8.0/net9.0/net10.0; Eval.Direct/Judge/Grounding; assertions; AddLLMEval; JSON/JSONL suites + HTML/JSON reports; Azure OpenAI
+- Pluggable metrics (IEvaluationMetric / MetricRegistry): exact, keyword, semantic (TF-IDF), json, schema, relevance, grounded-heuristic + custom registration
+- CSV dataset loading (JSON/JSONL still supported)
+- Golden baseline comparison (BaselineComparer) for CI regression checks
+- Markdown + CSV report writers (alongside HTML/JSON)
+- Best-effort TokenUsage / EstimatedCostUsd when providers return usage
+- GroundednessScore + HallucinationRate on grounding results
 - Classic EvaluationRequest / EvaluateAsync remain compatible
+
 See https://github.com/sooraj171/LLMEval/blob/main/CHANGELOG.md
     </PackageReleaseNotes>
     <RepositoryUrl>https://github.com/sooraj171/LLMEval</RepositoryUrl>

@@ -9,26 +9,38 @@ namespace LLMEval
     {
         private readonly IAiProviderFactory _providerFactory;
         private readonly HttpClient _httpClient;
-        private readonly TfidfSimilarity _tfidfSimilarity;
         private readonly LLMEvalOptions? _options;
+        private readonly MetricRegistry _metrics;
 
         public AdvancedEvaluationService(IAiProviderFactory providerFactory)
-            : this(providerFactory, new HttpClient(), null)
+            : this(providerFactory, new HttpClient(), null, null)
         {
         }
 
         public AdvancedEvaluationService(IAiProviderFactory providerFactory, HttpClient httpClient)
-            : this(providerFactory, httpClient, null)
+            : this(providerFactory, httpClient, null, null)
         {
         }
 
         public AdvancedEvaluationService(IAiProviderFactory providerFactory, HttpClient httpClient, LLMEvalOptions? options)
+            : this(providerFactory, httpClient, options, null)
+        {
+        }
+
+        public AdvancedEvaluationService(
+            IAiProviderFactory providerFactory,
+            HttpClient httpClient,
+            LLMEvalOptions? options,
+            MetricRegistry? metrics)
         {
             _providerFactory = providerFactory ?? throw new ArgumentNullException(nameof(providerFactory));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-            _tfidfSimilarity = new TfidfSimilarity();
             _options = options;
+            _metrics = metrics ?? MetricRegistry.CreateDefault();
         }
+
+        /// <summary>Metric registry used for DirectEvaluation (built-ins + custom registrations).</summary>
+        public MetricRegistry Metrics => _metrics;
 
         /// <summary>Maps <see cref="EvaluationRequest.ModelName"/> into Configuration["Model"] when Model is unset.</summary>
         public static void ApplyModelNameToConfiguration(EvaluationRequest request)
@@ -110,13 +122,16 @@ namespace LLMEval
                     Details = "No factual statements to validate.",
                     UnsupportedStatements = Array.Empty<string>(),
                     PartiallySupportedStatements = Array.Empty<string>(),
-                    RiskLevel = "Low"
+                    RiskLevel = "Low",
+                    GroundednessScore = 1.0,
+                    HallucinationRate = 0.0
                 };
             }
 
             var unsupported = new List<string>();
             var partiallySupported = new List<string>();
             int supportedCount = 0;
+            TokenUsage? usageAcc = null;
 
             const string systemInstruction = "You are a grounding validator. Given REFERENCE TEXT and one CLAIM from an AI response, output exactly one of: SUPPORTED, PARTIALLY_SUPPORTED, or UNSUPPORTED. Then optionally one line starting with Reason:";
             string refBlock = $"REFERENCE TEXT:\n{referenceText}";
@@ -138,9 +153,14 @@ namespace LLMEval
                         Details = $"Judge call failed for statement: {ex.Message}",
                         UnsupportedStatements = unsupported,
                         PartiallySupportedStatements = partiallySupported,
-                        RiskLevel = "High"
+                        RiskLevel = "High",
+                        GroundednessScore = 0,
+                        HallucinationRate = statements.Count == 0 ? 0 : (double)unsupported.Count / statements.Count,
+                        Usage = usageAcc
                     };
                 }
+
+                usageAcc = TokenUsage.Combine(usageAcc, TokenUsageParser.TryParse(jsonResponse, config));
 
                 string? rawContent = GetRawContentFromProvider(request.ProviderType, jsonResponse);
                 var label = GroundingJudgeParser.ParseGroundingJudgeOutput(rawContent ?? string.Empty);
@@ -160,10 +180,11 @@ namespace LLMEval
             }
 
             double groundingScore = (double)supportedCount / statements.Count;
+            double hallucinationRate = (double)unsupported.Count / statements.Count;
             string riskLevel = ComputeRiskLevel(supportedCount, partiallySupported.Count, unsupported.Count, statements.Count);
             bool isPassed = riskLevel != "High" && groundingScore >= request.PassThreshold;
 
-            string details = $"Grounding: {supportedCount}/{statements.Count} statements fully supported ({groundingScore:P0}). Unsupported: {unsupported.Count}; Partial: {partiallySupported.Count}. Risk: {riskLevel}.";
+            string details = $"Grounding: {supportedCount}/{statements.Count} statements fully supported ({groundingScore:P0}). Unsupported: {unsupported.Count}; Partial: {partiallySupported.Count}. Hallucination rate: {hallucinationRate:P0}. Risk: {riskLevel}.";
 
             return new EvaluationResult
             {
@@ -173,7 +194,10 @@ namespace LLMEval
                 Details = details,
                 UnsupportedStatements = unsupported,
                 PartiallySupportedStatements = partiallySupported,
-                RiskLevel = riskLevel
+                RiskLevel = riskLevel,
+                GroundednessScore = groundingScore,
+                HallucinationRate = hallucinationRate,
+                Usage = usageAcc
             };
         }
 
@@ -222,6 +246,7 @@ namespace LLMEval
             try
             {
                 string llmResponseJson = await provider.GetResponseAsync(request.Endpoint, prompt, request.Configuration, cancellationToken);
+                var usage = TokenUsageParser.TryParse(llmResponseJson, request.Configuration);
 
                 LLMParseResult parsedResult;
                 if (request.ProviderType == ProviderType.Gemini)
@@ -258,7 +283,8 @@ namespace LLMEval
                     Score = score,
                     IsPassed = isPassed,
                     Details = parsedResult.Description ?? string.Empty,
-                    Confidence = confidence
+                    Confidence = confidence,
+                    Usage = usage
                 };
             }
             catch (Exception ex)
@@ -272,56 +298,44 @@ namespace LLMEval
             }
         }
 
-        private Task<EvaluationResult> EvaluateDirectlyAsync(EvaluationRequest request)
+        private async Task<EvaluationResult> EvaluateDirectlyAsync(EvaluationRequest request)
         {
-            double score;
-            string details = string.Empty;
-
-            switch (request.MatchingType?.ToLower())
+            var metricName = string.IsNullOrWhiteSpace(request.MatchingType) ? "exact" : request.MatchingType.Trim();
+            if (!_metrics.TryGet(metricName, out var metric))
             {
-                case "keyword":
-                    score = KeywordMatchScore(request.AiResponse, request.GoldenOutput);
-                    break;
-                case "semantic":
-                    (score, details) = _tfidfSimilarity.Calculate(request.AiResponse, request.GoldenOutput);
-                    break;
-                default:
-                    score = ExactMatchScore(request.AiResponse, request.GoldenOutput);
-                    break;
-            }
-
-            bool isPassed = score >= request.PassThreshold;
-
-            return Task.FromResult(new EvaluationResult
-            {
-                Score = score,
-                IsPassed = isPassed,
-                Details = details
-            });
-        }
-
-        private double ExactMatchScore(string response, string golden)
-        {
-            return response.Trim().Equals(golden.Trim(), StringComparison.OrdinalIgnoreCase) ? 1.0 : 0.0;
-        }
-
-        private double KeywordMatchScore(string response, string golden)
-        {
-            var responseKeywords = response.ToLower().Split(new[] { ' ', '-', ',', '.', ';', ':' }, StringSplitOptions.RemoveEmptyEntries).ToHashSet();
-            var goldenKeywords = golden.ToLower().Split(new[] { ' ', '-', ',', '.', ';', ':' }, StringSplitOptions.RemoveEmptyEntries).ToHashSet();
-
-            if (!goldenKeywords.Any()) return 1.0;
-
-            int matchedKeywords = 0;
-            foreach (var keyword in goldenKeywords)
-            {
-                if (responseKeywords.Contains(keyword))
+                return new EvaluationResult
                 {
-                    matchedKeywords++;
-                }
+                    Score = 0,
+                    IsPassed = false,
+                    MetricName = metricName,
+                    Details = $"Unknown matching type / metric '{metricName}'. Registered: {string.Join(", ", _metrics.Names)}."
+                };
             }
 
-            return (double)matchedKeywords / goldenKeywords.Count;
+            var context = new MetricContext
+            {
+                Question = request.Question,
+                Actual = request.AiResponse,
+                Expected = request.GoldenOutput,
+                Schema = request.Schema,
+                PassThreshold = request.PassThreshold,
+                Configuration = request.Configuration
+            };
+
+            var metricResult = await metric.EvaluateAsync(context).ConfigureAwait(false);
+            return new EvaluationResult
+            {
+                Score = metricResult.Score,
+                IsPassed = metricResult.IsPassed,
+                Details = metricResult.Details,
+                MetricName = metric.Name,
+                GroundednessScore = string.Equals(metric.Name, "grounded-heuristic", StringComparison.OrdinalIgnoreCase)
+                    ? metricResult.Score
+                    : null,
+                HallucinationRate = string.Equals(metric.Name, "grounded-heuristic", StringComparison.OrdinalIgnoreCase)
+                    ? Math.Max(0, 1.0 - metricResult.Score)
+                    : null
+            };
         }
     }
 }

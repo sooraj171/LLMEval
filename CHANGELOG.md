@@ -4,6 +4,39 @@ All notable changes to **STAF.LLMEval** (NuGet: [STAF.LLMEval](https://www.nuget
 
 STAF.LLMEval is a .NET LLM evaluation / AI testing framework for AI response evaluation, LLM-as-judge scoring, RAG grounding, and hallucination detection.
 
+## [2.1.0] - 2026-08-06
+
+### Summary
+
+Evaluation engine & datasets: pluggable metrics, CSV loading, golden baseline comparison, Markdown/CSV reports, and best-effort token/cost usage—while keeping classic `EvaluateAsync` compatibility.
+
+### Added
+
+- **Plugin metrics:** `IEvaluationMetric`, `MetricRegistry`, `MetricContext` / `MetricResult`
+  - Built-ins: `exact`, `keyword`, `semantic` (TF-IDF — clarified in details), `json`, `schema`, `relevance`, `grounded-heuristic`
+  - Custom metrics via `MetricRegistry.Register` or `services.AddLLMEvalMetric<T>()` + `AddLLMEval(..., configureMetrics:)`
+- Fluent Direct helpers: `.Json()`, `.Schema()`, `.Relevance()`, `.GroundedHeuristic()`, `.WithMetric(...)`
+- **CSV** dataset loading in `EvaluationSuite` (JSON / JSONL unchanged)
+- **Baseline comparison:** `BaselineComparer.Compare` / `CompareToBaselineFileAsync` / `WriteDiffReportAsync`
+- Report writers: `report.md` + `report.csv` (still writes `report.json` + `report.html`)
+- **TokenUsage** on `EvaluationResult` / suite results when providers expose usage; optional `InputCostPer1M` / `OutputCostPer1M` for `EstimatedCostUsd`
+- Grounding fields: `GroundednessScore`, `HallucinationRate`
+- `EvaluationRequest.Schema` for schema metric
+- MinimalXunit: CSV sample + baseline regression test
+
+### Changed
+
+- Package version **2.1.0**
+- DirectEvaluation matching routes through `MetricRegistry` (behavior of exact/keyword/semantic preserved)
+- Suite reports include metric name and optional aggregate usage
+
+### Migration from 2.0.x
+
+- Existing `EvaluationRequest` + `EvaluateAsync` / `Eval.*` code continues to work
+- `WriteReportsAsync` now also emits `report.md` and `report.csv` (additive)
+- Unknown `MatchingType` values now fail clearly instead of silently falling back to exact — register a custom metric or use a built-in name
+- Semantic Direct matching remains **TF-IDF** (not embeddings); details text now says so explicitly
+
 ## [2.0.1] - 2026-08-06
 
 ### Changed

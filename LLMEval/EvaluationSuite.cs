@@ -47,6 +47,13 @@ public class SuiteCase
     /// <summary>Optional JSON Schema for MatchingType = schema.</summary>
     [JsonPropertyName("schema")]
     public string? Schema { get; set; }
+
+    /// <summary>
+    /// Optional tags for filtering cases in CI (e.g. smoke, nightly).
+    /// JSON/JSONL: string array. CSV: semicolon- or pipe-separated in a <c>tags</c> column.
+    /// </summary>
+    [JsonPropertyName("tags")]
+    public List<string>? Tags { get; set; }
 }
 
 /// <summary>Result for one suite case.</summary>
@@ -82,6 +89,57 @@ public class SuiteRunResult
 
     /// <summary>Returns true when pass rate meets or exceeds <paramref name="minimumPassRate"/> (0–1).</summary>
     public bool MeetsPassRate(double minimumPassRate) => PassRate >= minimumPassRate;
+}
+
+/// <summary>Helpers for filtering suite datasets by tag.</summary>
+public static class SuiteCaseFiltering
+{
+    /// <summary>
+    /// Filters cases that have the given tags.
+    /// When <paramref name="requireAll"/> is false (default), a case matches if it has any listed tag.
+    /// When true, the case must include every listed tag.
+    /// Cases with no tags never match a non-empty tag filter.
+    /// </summary>
+    public static IReadOnlyList<SuiteCase> FilterByTags(
+        this IEnumerable<SuiteCase> cases,
+        IEnumerable<string> tags,
+        bool requireAll = false)
+    {
+        ArgumentNullException.ThrowIfNull(cases);
+        ArgumentNullException.ThrowIfNull(tags);
+        var wanted = tags
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Select(t => t.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (wanted.Count == 0)
+            return cases.ToList();
+
+        return cases.Where(c =>
+        {
+            var caseTags = c.Tags?
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Select(t => t.Trim())
+                .ToList() ?? new List<string>();
+            if (caseTags.Count == 0) return false;
+            if (requireAll)
+                return wanted.All(w => caseTags.Any(ct => string.Equals(ct, w, StringComparison.OrdinalIgnoreCase)));
+            return wanted.Any(w => caseTags.Any(ct => string.Equals(ct, w, StringComparison.OrdinalIgnoreCase)));
+        }).ToList();
+    }
+
+    /// <inheritdoc cref="FilterByTags(IEnumerable{SuiteCase}, IEnumerable{string}, bool)"/>
+    public static IReadOnlyList<SuiteCase> FilterByTags(
+        this IEnumerable<SuiteCase> cases,
+        bool requireAll,
+        params string[] tags) =>
+        cases.FilterByTags(tags, requireAll);
+
+    /// <inheritdoc cref="FilterByTags(IEnumerable{SuiteCase}, IEnumerable{string}, bool)"/>
+    public static IReadOnlyList<SuiteCase> FilterByTags(
+        this IEnumerable<SuiteCase> cases,
+        params string[] tags) =>
+        cases.FilterByTags(tags, requireAll: false);
 }
 
 /// <summary>Loads JSON/JSONL/CSV datasets and runs batch evaluations with optional reports.</summary>
@@ -334,7 +392,8 @@ internal static class CsvDatasetParser
                 Endpoint = NullIfEmpty(Get("endpoint")),
                 Model = NullIfEmpty(Get("model")),
                 Schema = NullIfEmpty(Get("schema")),
-                IsReferenceDoc = bool.TryParse(Get("isReferenceDoc"), out var ird) && ird
+                IsReferenceDoc = bool.TryParse(Get("isReferenceDoc"), out var ird) && ird,
+                Tags = ParseTags(Get("tags"))
             };
 
             if (double.TryParse(Get("threshold"), NumberStyles.Any, CultureInfo.InvariantCulture, out var th))
@@ -347,6 +406,16 @@ internal static class CsvDatasetParser
     }
 
     private static string? NullIfEmpty(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    private static List<string>? ParseTags(string raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+        var tags = raw
+            .Split(new[] { ';', '|', ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(t => t.Length > 0)
+            .ToList();
+        return tags.Count == 0 ? null : tags;
+    }
 
     private static List<string> SplitLines(string text)
     {

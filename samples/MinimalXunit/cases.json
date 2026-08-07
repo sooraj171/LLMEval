@@ -6,7 +6,8 @@
     "expected": "Paris",
     "evaluationType": "DirectEvaluation",
     "matchingType": "exact",
-    "threshold": 1.0
+    "threshold": 1.0,
+    "tags": ["smoke", "ci"]
   },
   {
     "id": "capital-keyword",
@@ -15,6 +16,7 @@
     "expected": "Paris France",
     "evaluationType": "DirectEvaluation",
     "matchingType": "keyword",
-    "threshold": 0.5
+    "threshold": 0.5,
+    "tags": ["ci"]
   }
 ]

@@ -4,7 +4,15 @@
 
 Score outputs with **pluggable metrics** (exact, keyword, TF-IDF semantic similarity, JSON/schema, relevance, heuristic grounding), **LLM-as-judge**, and **RAG grounding / hallucination detection**. Includes a fluent `Eval` API, test assertions, Options/DI, JSON/JSONL/CSV evaluation suites, golden baseline comparison, and HTML/JSON/Markdown/CSV reports.
 
-**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 2.1.0 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
+**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 2.2.0 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
+
+## Release notes — 2.2.0
+
+- **Richer asserts:** metric / grounding / usage in failure messages; optional `because:`; `ShouldMeetPassRate` for suite CI gates
+- **`EvalTraits`** + suite case **tags** / `FilterByTags` for CI filtering
+- **`LLMEVAL_REPORT_DIR`** / `ReportPaths` for artifact folders
+- **CI templates:** GitHub Actions + Azure DevOps (`samples/ci`) with pass-rate fail + report upload
+- Framework-specific NuGet packages not required — asserts stay in the main package
 
 ## Release notes — 2.1.0
 
@@ -51,12 +59,31 @@ await Eval.Direct().GroundedHeuristic(actual, referenceDoc).WithThreshold(0.5).E
 ## Assertions
 
 ```csharp
-result.ShouldPass();
+result.ShouldPass(because: "exact capital");
 result.ShouldScoreAbove(0.8);
 result.ShouldBeGrounded(); // fails if RiskLevel is High or unsupported statements exist
+report.ShouldMeetPassRate(0.9, because: "CI gate");
 ```
 
-Failures throw `LLMEvalAssertionException` with score, details, and grounding context.
+Failures throw `LLMEvalAssertionException` with score, metric, grounding, usage, and optional `because` context.
+`SuiteResult` is set when a suite pass-rate assert fails.
+
+### Filtering eval tests (traits)
+
+```csharp
+[Fact]
+[Trait(EvalTraits.Category, EvalTraits.LLMEval)]
+[Trait(EvalTraits.Kind, EvalTraits.Direct)]
+[Trait(EvalTraits.Tag, EvalTraits.Smoke)]
+public async Task ExactMatch_ShouldPass() { ... }
+```
+
+```bash
+dotnet test --filter "Category=LLMEval"
+dotnet test --filter "Category=LLMEval&Tag=Smoke"
+```
+
+Same string constants work with MSTest `[TestCategory(EvalTraits.LLMEval)]` and NUnit `[Category(EvalTraits.LLMEval)]`.
 
 ## Fluent judge & grounding
 
@@ -232,23 +259,24 @@ result.ShouldBeGrounded();
 
 ```csharp
 var cases = await EvaluationSuite.LoadAsync("cases.json"); // also .jsonl / .csv
-// or: EvaluationSuite.ParseDataset(text, pathHint);
-
+var smoke = cases.FilterByTags("smoke"); // optional tags on cases
 var suite = new EvaluationSuite(evalService);
-var report = await suite.RunAsync(cases);
-await suite.WriteReportsAsync(report, "./artifacts"); // report.json + .html + .md + .csv
+var report = await suite.RunAsync(smoke);
+var outDir = ReportPaths.ResolveReportDirectory("./artifacts"); // honors LLMEVAL_REPORT_DIR
+await suite.WriteReportsAsync(report, outDir); // report.json + .html + .md + .csv
 
-if (!report.MeetsPassRate(0.9))
-    throw new Exception($"Pass rate {report.PassRate:P0} below threshold");
+report.ShouldMeetPassRate(0.9, because: "CI pass-rate threshold");
 
 var diff = await BaselineComparer.CompareToBaselineFileAsync(report, "baseline-report.json");
 if (diff.HasRegressions)
     throw new Exception(diff.ToSummary());
 ```
 
-Dataset fields: `id`, `question`, `actual`, `expected`, `evaluationType`, `matchingType`, `threshold`, optional `provider`, `endpoint`, `model`, `schema`, `isReferenceDoc`, `referenceDocuments`.
+Dataset fields: `id`, `question`, `actual`, `expected`, `evaluationType`, `matchingType`, `threshold`, optional `provider`, `endpoint`, `model`, `schema`, `isReferenceDoc`, `referenceDocuments`, `tags`.
 
-Formats: JSON array, JSONL, CSV (header row), or `{ "cases": [ ... ] }`.
+Formats: JSON array, JSONL, CSV (header row; `tags` as `smoke;ci`), or `{ "cases": [ ... ] }`.
+
+CI templates: see repo `samples/ci` (GitHub Actions + Azure DevOps) for pass-rate failure + report artifact publish.
 
 ## Providers
 

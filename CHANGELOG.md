@@ -4,6 +4,37 @@ All notable changes to **STAF.LLMEval** (NuGet: [STAF.LLMEval](https://www.nuget
 
 STAF.LLMEval is a .NET LLM evaluation / AI testing framework for AI response evaluation, LLM-as-judge scoring, RAG grounding, and hallucination detection.
 
+## [2.2.0] - 2026-08-06
+
+### Summary
+
+Test framework & CI reporting: richer assertion messages, suite pass-rate asserts, eval traits / case tags for filtering, and official GitHub Actions + Azure DevOps templates that fail on pass-rate and publish report artifacts—without separate MSTest/xUnit/NUnit packages.
+
+### Added
+
+- **Richer assertions:** multiline failure text with metric, groundedness, hallucination rate, partial support, usage/cost; optional `because:` on `ShouldPass` / `ShouldScoreAbove` / `ShouldBeGrounded`
+- **`ShouldMeetPassRate(minimum)`** on `SuiteRunResult` (lists failed case ids); `LLMEvalAssertionException.SuiteResult`
+- **`EvalTraits`** — `Category` / `Kind` / `Tag` constants for xUnit `[Trait]`, MSTest `[TestCategory]`, NUnit `[Category]`
+- **Suite case tags:** `SuiteCase.Tags` + `FilterByTags` (JSON array / CSV `tags` column with `;` `|` `,`)
+- **`ReportPaths.ResolveReportDirectory`** — honors `LLMEVAL_REPORT_DIR` for CI artifact folders
+- **CI templates:** `samples/ci/github-actions-llmeval.yml`, `samples/ci/azure-pipelines-llmeval.yml` (pass-rate via test asserts + upload/publish reports)
+- Main `.github/workflows/ci.yml` runs MinimalXunit with `--filter Category=LLMEval` and uploads `artifacts/llmeval`
+
+### Changed
+
+- Package version **2.2.0**
+- MinimalXunit sample uses traits, `ShouldMeetPassRate`, tagged cases, and `LLMEVAL_REPORT_DIR`
+
+### Not added (by design)
+
+- Separate `STAF.LLMEval.MSTest` / `.xUnit` / `.NUnit` packages — main-package asserts are framework-agnostic and sufficient for this release
+
+### Migration from 2.1.x
+
+- Existing `EvaluateAsync` / `Eval.*` / `ShouldPass()` call sites continue to work (`because` is optional)
+- Assertion messages are multiline and include more fields (update any brittle string asserts on exception text)
+- Prefer `report.ShouldMeetPassRate(0.9)` over raw `Assert.True(report.MeetsPassRate(0.9))` for clearer CI failures
+
 ## [2.1.0] - 2026-08-06
 
 ### Summary

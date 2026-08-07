@@ -7,8 +7,8 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 | — | v1.5.0 | Baseline (Direct / LLM-as-judge / Grounding + OpenAI/Gemini/Ollama) | Shipped |
 | 1 | v2.0.0 | Adoption | **Done** |
 | 2 | v2.1.0 | Evaluation Engine & Datasets | **Done** |
-| 3 | v2.2.0 | Test Framework & CI Reporting | **Next** |
-| 4 | v3.0.0 | Architecture & Ecosystem | Planned |
+| 3 | v2.2.0 | Test Framework & CI Reporting | **Done** |
+| 4 | v3.0.0 | Architecture & Ecosystem | **Next** |
 | 5 | v3.x | Community & Polish | Planned |
 
 ---
@@ -116,9 +116,11 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 
 ---
 
-## Phase 3 — v2.2.0 Test Framework & CI Reporting
+## Phase 3 — v2.2.0 Test Framework & CI Reporting (**Done**)
 
-**Status:** **Next**
+**Shipped in:** package version `2.2.0`. Tag when publishing: `v2.2.0`
+
+**Status:** **Done**
 
 ### In scope
 
@@ -134,14 +136,23 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 
 ### Definition of Done
 
-- At least one official CI template (GitHub Actions) with threshold fail
-- Docs + CHANGELOG; ROADMAP marks Phase 4 next
+- [x] At least one official CI template (GitHub Actions) with threshold fail
+- [x] Azure DevOps sample pipeline + report artifact publish
+- [x] Richer asserts (`because`, metric/grounding/usage, `ShouldMeetPassRate`) + `EvalTraits` / case tags
+- [x] Docs + CHANGELOG; ROADMAP marks Phase 4 next
+- [x] Separate framework packages **skipped** — main-package asserts remain sufficient
+
+### Key files
+
+- `LLMEval/EvaluationResultAssertions.cs`, `LLMEval/EvalTraits.cs`, `LLMEval/ReportPaths.cs`, `LLMEval/EvaluationSuite.cs`
+- `samples/ci/`, `samples/MinimalXunit/`, `.github/workflows/ci.yml`
+- `CHANGELOG.md`, `README.md`, this file
 
 ---
 
 ## Phase 4 — v3.0.0 Architecture & Ecosystem
 
-**Status:** Planned
+**Status:** **Next**
 
 ### In scope
 

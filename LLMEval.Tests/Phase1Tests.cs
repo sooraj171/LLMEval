@@ -463,6 +463,10 @@ public class EvaluationSuiteTests
             Assert.Contains("Paris", html);
             Assert.Contains("PASS", html);
             Assert.Contains("FAIL", html);
+            Assert.Contains("headBk", html);
+            Assert.Contains("STAF.LLMEval", html);
+            Assert.Contains("As Expected", html);
+            Assert.Contains("Not As Expected", html);
         }
         finally
         {

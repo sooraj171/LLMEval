@@ -272,6 +272,7 @@ var suite = new EvaluationSuite(evalService);
 var report = await suite.RunAsync(smoke);
 var outDir = ReportPaths.ResolveReportDirectory("./artifacts"); // honors LLMEVAL_REPORT_DIR
 await suite.WriteReportsAsync(report, outDir); // report.json + .html + .md + .csv
+// report.html uses the STAF HtmlResult skin (same visual language as STAF.Playwright)
 
 report.ShouldMeetPassRate(0.9, because: "CI pass-rate threshold");
 

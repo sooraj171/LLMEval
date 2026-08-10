@@ -29,6 +29,7 @@ using LLMEval;
 [assembly: TypeForwardedTo(typeof(LLMEvalAssertionException))]
 [assembly: TypeForwardedTo(typeof(EvalTraits))]
 [assembly: TypeForwardedTo(typeof(ReportPaths))]
+[assembly: TypeForwardedTo(typeof(HtmlResult))]
 [assembly: TypeForwardedTo(typeof(BaselineComparer))]
 [assembly: TypeForwardedTo(typeof(BaselineDiff))]
 [assembly: TypeForwardedTo(typeof(CaseScoreDelta))]

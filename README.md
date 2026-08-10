@@ -120,6 +120,7 @@ var suite = new EvaluationSuite(evalService);
 var report = await suite.RunAsync(smoke);
 var outDir = ReportPaths.ResolveReportDirectory("artifacts"); // or set LLMEVAL_REPORT_DIR
 await suite.WriteReportsAsync(report, outDir); // report.json + .html + .md + .csv
+// report.html uses the STAF HtmlResult skin (blue header, cyan rows, green/red PASS/FAIL)
 
 report.ShouldMeetPassRate(0.9, because: "CI pass-rate threshold");
 

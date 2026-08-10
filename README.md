@@ -4,7 +4,7 @@
 
 Use it to run **exact match**, **semantic similarity**, **LLM-as-judge**, and **RAG groundedness / hallucination detection** against golden answers or reference documents—with a fluent API, assertions, evaluation suites, and HTML/JSON reports. Works with **OpenAI**, **Azure OpenAI**, **Gemini**, **Ollama**, **Claude**, **Groq**, and **Mistral** on **.NET 8 / 9 / 10**.
 
-[![NuGet](https://img.shields.io/nuget/v/STAF.LLMEval.svg)](https://www.nuget.org/packages/STAF.LLMEval)
+[![NuGet](https://img.shields.io/badge/NuGet-v3.0.0-0B3D91?logo=nuget&logoColor=white)](https://www.nuget.org/packages/STAF.LLMEval)
 **v3.0.0** · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT · [Release notes](CHANGELOG.md) · [Packages](docs/PACKAGES.md) · [Migrate to v3](docs/MIGRATION-v3.md)
 
 ## Who is this for?

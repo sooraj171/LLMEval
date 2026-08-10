@@ -1,6 +1,6 @@
 # Minimal xUnit sample
 
-Demonstrates STAF.LLMEval **v2.2.0** DX: fluent `Eval.Direct()`, rich assertions, `EvalTraits`, JSON/CSV suites with tags, Markdown/CSV reports, golden **baseline comparison**, and CI-friendly `LLMEVAL_REPORT_DIR` — **no API keys required**.
+Demonstrates STAF.LLMEval **v3.0.0** DX: fluent `Eval.Direct()`, rich assertions, `EvalTraits`, JSON/CSV suites with tags, Markdown/CSV reports, golden **baseline comparison**, and CI-friendly `LLMEVAL_REPORT_DIR` — **no API keys required**.
 
 ```bash
 dotnet test samples/MinimalXunit/MinimalXunit.csproj

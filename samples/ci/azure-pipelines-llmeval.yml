@@ -1,0 +1,46 @@
+# Azure DevOps — STAF.LLMEval pipeline template (v2.2)
+#
+# Use as azure-pipelines.yml or include as a template.
+# Fails when ShouldMeetPassRate / assertions fail.
+# Publishes report artifacts for HTML/JSON/MD/CSV review.
+
+trigger:
+  - main
+  - master
+
+pr:
+  - main
+  - master
+
+variables:
+  LLMEVAL_REPORT_DIR: $(Build.ArtifactStagingDirectory)/llmeval
+  # Optional smoke-only: Category=LLMEval&Tag=Smoke
+  LLMEVAL_FILTER: Category=LLMEval
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: UseDotNet@2
+    displayName: Setup .NET 8
+    inputs:
+      packageType: sdk
+      version: 8.x
+
+  - script: |
+      mkdir -p "$(LLMEVAL_REPORT_DIR)"
+      dotnet test samples/MinimalXunit/MinimalXunit.csproj \
+        --configuration Release \
+        --verbosity normal \
+        --filter "$(LLMEVAL_FILTER)"
+    displayName: Run LLMEval tests (pass-rate gate)
+    env:
+      LLMEVAL_REPORT_DIR: $(LLMEVAL_REPORT_DIR)
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish LLMEval reports
+    condition: always()
+    inputs:
+      targetPath: $(LLMEVAL_REPORT_DIR)
+      artifact: llmeval-reports
+      publishLocation: pipeline

@@ -1,0 +1,3 @@
+id,question,actual,expected,matchingType,threshold,tags
+capital-exact,What is the capital of France?,Paris,Paris,exact,1.0,smoke;ci
+capital-keyword,What is the capital of France?,"Paris is the capital of France",Paris France,keyword,0.5,ci

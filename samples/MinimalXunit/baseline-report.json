@@ -1,0 +1,30 @@
+{
+  "StartedAt": "2026-08-06T00:00:00+00:00",
+  "CompletedAt": "2026-08-06T00:00:00+00:00",
+  "Total": 2,
+  "Passed": 2,
+  "Failed": 0,
+  "PassRate": 1,
+  "Cases": [
+    {
+      "Id": "capital-exact",
+      "Question": "What is the capital of France?",
+      "Expected": "Paris",
+      "Actual": "Paris",
+      "Score": 1,
+      "Passed": true,
+      "Details": "Exact match.",
+      "MetricName": "exact"
+    },
+    {
+      "Id": "capital-keyword",
+      "Question": "What is the capital of France?",
+      "Expected": "Paris France",
+      "Actual": "Paris is the capital of France",
+      "Score": 1,
+      "Passed": true,
+      "Details": "Keyword overlap: 2/2.",
+      "MetricName": "keyword"
+    }
+  ]
+}

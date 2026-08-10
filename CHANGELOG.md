@@ -4,6 +4,70 @@ All notable changes to **STAF.LLMEval** (NuGet: [STAF.LLMEval](https://www.nuget
 
 STAF.LLMEval is a .NET LLM evaluation / AI testing framework for AI response evaluation, LLM-as-judge scoring, RAG grounding, and hallucination detection.
 
+## [2.2.0] - 2026-08-06
+
+### Summary
+
+Test framework & CI reporting: richer assertion messages, suite pass-rate asserts, eval traits / case tags for filtering, and official GitHub Actions + Azure DevOps templates that fail on pass-rate and publish report artifacts—without separate MSTest/xUnit/NUnit packages.
+
+### Added
+
+- **Richer assertions:** multiline failure text with metric, groundedness, hallucination rate, partial support, usage/cost; optional `because:` on `ShouldPass` / `ShouldScoreAbove` / `ShouldBeGrounded`
+- **`ShouldMeetPassRate(minimum)`** on `SuiteRunResult` (lists failed case ids); `LLMEvalAssertionException.SuiteResult`
+- **`EvalTraits`** — `Category` / `Kind` / `Tag` constants for xUnit `[Trait]`, MSTest `[TestCategory]`, NUnit `[Category]`
+- **Suite case tags:** `SuiteCase.Tags` + `FilterByTags` (JSON array / CSV `tags` column with `;` `|` `,`)
+- **`ReportPaths.ResolveReportDirectory`** — honors `LLMEVAL_REPORT_DIR` for CI artifact folders
+- **CI templates:** `samples/ci/github-actions-llmeval.yml`, `samples/ci/azure-pipelines-llmeval.yml` (pass-rate via test asserts + upload/publish reports)
+- Main `.github/workflows/ci.yml` runs MinimalXunit with `--filter Category=LLMEval` and uploads `artifacts/llmeval`
+
+### Changed
+
+- Package version **2.2.0**
+- MinimalXunit sample uses traits, `ShouldMeetPassRate`, tagged cases, and `LLMEVAL_REPORT_DIR`
+
+### Not added (by design)
+
+- Separate `STAF.LLMEval.MSTest` / `.xUnit` / `.NUnit` packages — main-package asserts are framework-agnostic and sufficient for this release
+
+### Migration from 2.1.x
+
+- Existing `EvaluateAsync` / `Eval.*` / `ShouldPass()` call sites continue to work (`because` is optional)
+- Assertion messages are multiline and include more fields (update any brittle string asserts on exception text)
+- Prefer `report.ShouldMeetPassRate(0.9)` over raw `Assert.True(report.MeetsPassRate(0.9))` for clearer CI failures
+
+## [2.1.0] - 2026-08-06
+
+### Summary
+
+Evaluation engine & datasets: pluggable metrics, CSV loading, golden baseline comparison, Markdown/CSV reports, and best-effort token/cost usage—while keeping classic `EvaluateAsync` compatibility.
+
+### Added
+
+- **Plugin metrics:** `IEvaluationMetric`, `MetricRegistry`, `MetricContext` / `MetricResult`
+  - Built-ins: `exact`, `keyword`, `semantic` (TF-IDF — clarified in details), `json`, `schema`, `relevance`, `grounded-heuristic`
+  - Custom metrics via `MetricRegistry.Register` or `services.AddLLMEvalMetric<T>()` + `AddLLMEval(..., configureMetrics:)`
+- Fluent Direct helpers: `.Json()`, `.Schema()`, `.Relevance()`, `.GroundedHeuristic()`, `.WithMetric(...)`
+- **CSV** dataset loading in `EvaluationSuite` (JSON / JSONL unchanged)
+- **Baseline comparison:** `BaselineComparer.Compare` / `CompareToBaselineFileAsync` / `WriteDiffReportAsync`
+- Report writers: `report.md` + `report.csv` (still writes `report.json` + `report.html`)
+- **TokenUsage** on `EvaluationResult` / suite results when providers expose usage; optional `InputCostPer1M` / `OutputCostPer1M` for `EstimatedCostUsd`
+- Grounding fields: `GroundednessScore`, `HallucinationRate`
+- `EvaluationRequest.Schema` for schema metric
+- MinimalXunit: CSV sample + baseline regression test
+
+### Changed
+
+- Package version **2.1.0**
+- DirectEvaluation matching routes through `MetricRegistry` (behavior of exact/keyword/semantic preserved)
+- Suite reports include metric name and optional aggregate usage
+
+### Migration from 2.0.x
+
+- Existing `EvaluationRequest` + `EvaluateAsync` / `Eval.*` code continues to work
+- `WriteReportsAsync` now also emits `report.md` and `report.csv` (additive)
+- Unknown `MatchingType` values now fail clearly instead of silently falling back to exact — register a custom metric or use a built-in name
+- Semantic Direct matching remains **TF-IDF** (not embeddings); details text now says so explicitly
+
 ## [2.0.1] - 2026-08-06
 
 ### Changed

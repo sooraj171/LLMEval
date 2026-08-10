@@ -1,0 +1,52 @@
+# GitHub Actions — STAF.LLMEval CI template (v2.2)
+#
+# Copy into your repo as .github/workflows/llmeval.yml (or merge into an existing workflow).
+# Fails the job when suite/assertions fail (pass-rate via ShouldMeetPassRate).
+# Uploads report.json / .html / .md / .csv (+ baseline-diff.md when present).
+
+name: LLMEval
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  # Suite reports written here (see ReportPaths / LLMEVAL_REPORT_DIR)
+  LLMEVAL_REPORT_DIR: ${{ github.workspace }}/artifacts/llmeval
+  # Optional: fail only smoke evals — uncomment filter below
+  # LLMEVAL_FILTER: Category=LLMEval&Tag=Smoke
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+
+      - name: Run LLMEval tests (pass-rate + assertions)
+        # Adjust project path to your test project that references STAF.LLMEval
+        run: |
+          mkdir -p "$LLMEVAL_REPORT_DIR"
+          dotnet test samples/MinimalXunit/MinimalXunit.csproj \
+            --configuration Release \
+            --verbosity normal \
+            --filter "Category=LLMEval"
+        # To run only smoke: --filter "Category=LLMEval&Tag=Smoke"
+
+      - name: Upload LLMEval reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: llmeval-reports
+          path: |
+            artifacts/llmeval/**
+          if-no-files-found: warn
+          retention-days: 14

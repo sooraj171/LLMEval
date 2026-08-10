@@ -2,23 +2,25 @@
 
 **STAF.LLMEval** is a .NET **LLM evaluation** and **AI testing** library for validating **generative AI** responses (ChatGPT, GPT, Gemini, Ollama, Azure OpenAI) in unit tests and CI pipelines.
 
-Score outputs with **exact match**, **keyword**, **TF-IDF semantic similarity**, **LLM-as-judge**, and **RAG grounding / hallucination detection**. Includes a fluent `Eval` API, test assertions, Options/DI, JSON/JSONL evaluation suites, and HTML/JSON reports.
+Score outputs with **pluggable metrics** (exact, keyword, TF-IDF semantic similarity, JSON/schema, relevance, heuristic grounding), **LLM-as-judge**, and **RAG grounding / hallucination detection**. Includes a fluent `Eval` API, test assertions, Options/DI, JSON/JSONL/CSV evaluation suites, golden baseline comparison, and HTML/JSON/Markdown/CSV reports.
 
-**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 2.0.1 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
+**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 2.2.0 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
 
-## Release notes — 2.0.1
+## Release notes — 2.2.0
 
-- **Discoverability:** richer NuGet title, description, tags, and release notes for LLM / AI evaluation search  
-- **No API changes** from 2.0.0  
+- **Richer asserts:** metric / grounding / usage in failure messages; optional `because:`; `ShouldMeetPassRate` for suite CI gates
+- **`EvalTraits`** + suite case **tags** / `FilterByTags` for CI filtering
+- **`LLMEVAL_REPORT_DIR`** / `ReportPaths` for artifact folders
+- **CI templates:** GitHub Actions + Azure DevOps (`samples/ci`) with pass-rate fail + report upload
+- Framework-specific NuGet packages not required — asserts stay in the main package
 
-### Included from 2.0.0
+## Release notes — 2.1.0
 
-- **Multi-target** .NET 8 / 9 / 10  
-- **Fluent evaluation API:** `Eval.Direct()`, `Eval.Judge()`, `Eval.Grounding()`  
-- **Assertions:** `ShouldPass()`, `ShouldScoreAbove()`, `ShouldBeGrounded()`  
-- **DI:** `services.AddLLMEval(...)` + `LLMEvalOptions`  
-- **Suites & reports:** JSON/JSONL → `report.html` / `report.json`  
-- **Azure OpenAI** (plus OpenAI, Gemini, Ollama)  
+- **Plugin metrics:** `IEvaluationMetric` / `MetricRegistry` (exact, keyword, semantic TF-IDF, json, schema, relevance, grounded-heuristic + custom)
+- **Datasets:** CSV (+ JSON/JSONL); golden **baseline comparison** for CI
+- **Reports:** Markdown + CSV in addition to HTML/JSON
+- **Usage:** best-effort `TokenUsage` / cost when providers return usage
+- **Grounding:** `GroundednessScore`, `HallucinationRate`
 - **Backward compatible** with `EvaluationRequest` / `EvaluateAsync`
 
 Full changelog: https://github.com/sooraj171/LLMEval/blob/main/CHANGELOG.md
@@ -47,18 +49,41 @@ Other Direct matchers:
 
 ```csharp
 await Eval.Direct().Keyword(actual, expected).WithThreshold(0.5).EvaluateAsync();
-await Eval.Direct().Semantic(actual, expected).WithThreshold(0.3).EvaluateAsync(); // TF-IDF
+await Eval.Direct().Semantic(actual, expected).WithThreshold(0.3).EvaluateAsync(); // TF-IDF (not embeddings)
+await Eval.Direct().Json("""{"ok":true}""").EvaluateAsync();
+await Eval.Direct().Schema(actualJson, jsonSchema).EvaluateAsync();
+await Eval.Direct().Relevance(question, actual).WithThreshold(0.2).EvaluateAsync();
+await Eval.Direct().GroundedHeuristic(actual, referenceDoc).WithThreshold(0.5).EvaluateAsync();
 ```
 
 ## Assertions
 
 ```csharp
-result.ShouldPass();
+result.ShouldPass(because: "exact capital");
 result.ShouldScoreAbove(0.8);
 result.ShouldBeGrounded(); // fails if RiskLevel is High or unsupported statements exist
+report.ShouldMeetPassRate(0.9, because: "CI gate");
 ```
 
-Failures throw `LLMEvalAssertionException` with score, details, and grounding context.
+Failures throw `LLMEvalAssertionException` with score, metric, grounding, usage, and optional `because` context.
+`SuiteResult` is set when a suite pass-rate assert fails.
+
+### Filtering eval tests (traits)
+
+```csharp
+[Fact]
+[Trait(EvalTraits.Category, EvalTraits.LLMEval)]
+[Trait(EvalTraits.Kind, EvalTraits.Direct)]
+[Trait(EvalTraits.Tag, EvalTraits.Smoke)]
+public async Task ExactMatch_ShouldPass() { ... }
+```
+
+```bash
+dotnet test --filter "Category=LLMEval"
+dotnet test --filter "Category=LLMEval&Tag=Smoke"
+```
+
+Same string constants work with MSTest `[TestCategory(EvalTraits.LLMEval)]` and NUnit `[Category(EvalTraits.LLMEval)]`.
 
 ## Fluent judge & grounding
 
@@ -92,6 +117,7 @@ var grounding = await Eval.Grounding()
     .EvaluateAsync();
 
 grounding.ShouldBeGrounded();
+// Also: grounding.GroundednessScore, grounding.HallucinationRate, grounding.Usage
 ```
 
 Inject an existing service with `.Using(evaluationService)` or apply shared settings with `.WithOptions(options)`.
@@ -102,6 +128,7 @@ Inject an existing service with `.Using(evaluationService)` or apply shared sett
 using Microsoft.Extensions.DependencyInjection;
 using LLMEval;
 
+services.AddLLMEvalMetric<MyCustomMetric>(); // optional
 services.AddLLMEval(o =>
 {
     o.DefaultProvider = ProviderType.OpenAI;
@@ -110,6 +137,9 @@ services.AddLLMEval(o =>
     o.Temperature = "0";
     o.DefaultPassThreshold = 0.8;
     o.MaxDegreeOfParallelism = 4; // suite case parallelism
+}, configureMetrics: registry =>
+{
+    // registry.Register(new MyCustomMetric());
 });
 
 var eval = serviceProvider.GetRequiredService<IEvaluationService>();
@@ -127,6 +157,7 @@ Still supported on `EvaluationRequest.Configuration`:
 | `Model` | Model name or Azure deployment name |
 | `Temperature` | Sampling temperature (prefer `"0"` in CI) |
 | `ApiVersion` | Azure OpenAI API version (optional) |
+| `InputCostPer1M` / `OutputCostPer1M` | Optional USD per 1M tokens for `EstimatedCostUsd` |
 
 `EvaluationRequest.ModelName` is copied into `Configuration["Model"]` when Model is not set.
 
@@ -134,18 +165,19 @@ Still supported on `EvaluationRequest.Configuration`:
 
 ### `EvaluationRequest`
 
-- `Question`, `AiResponse`, `GoldenOutput`
+- `Question`, `AiResponse`, `GoldenOutput`, optional `Schema`
 - `ProviderType`: `Ollama`, `OpenAI`, `Gemini`, `AzureOpenAI`
 - `Endpoint`, `Configuration`, `PassThreshold`, `ModelName`
-- `MatchingType`: `exact`, `keyword`, `semantic` (TF-IDF)
+- `MatchingType`: `exact`, `keyword`, `semantic` (TF-IDF), `json`, `schema`, `relevance`, `grounded-heuristic`, or any registered custom name
 - `EvaluationType`: `DirectEvaluation`, `LLMAsJudge`, `GroundedAnswerCheck`
 - `IsReferenceDoc` — treat `GoldenOutput` as a reference document for LLM-as-judge
 - `ReferenceDocuments` — optional multi-doc list for grounding (overrides `GoldenOutput` when set)
 
 ### `EvaluationResult`
 
-- `Score`, `IsPassed`, `Details`, `Confidence`
-- Grounding: `UnsupportedStatements`, `PartiallySupportedStatements`, `RiskLevel` (`Low` / `Medium` / `High`)
+- `Score`, `IsPassed`, `Details`, `Confidence`, `MetricName`
+- Grounding: `UnsupportedStatements`, `PartiallySupportedStatements`, `RiskLevel`, `GroundednessScore`, `HallucinationRate`
+- `Usage` — best-effort `TokenUsage` when the provider response includes usage metadata
 
 ## Classic usage (fully supported)
 
@@ -223,23 +255,28 @@ var result = await evalService.EvaluateAsync(request);
 result.ShouldBeGrounded();
 ```
 
-## Suite + HTML/JSON reports
+## Suite + reports (JSON/HTML/Markdown/CSV)
 
 ```csharp
-var cases = await EvaluationSuite.LoadAsync("cases.json");
-// or: EvaluationSuite.ParseDataset(jsonOrJsonl);
-
+var cases = await EvaluationSuite.LoadAsync("cases.json"); // also .jsonl / .csv
+var smoke = cases.FilterByTags("smoke"); // optional tags on cases
 var suite = new EvaluationSuite(evalService);
-var report = await suite.RunAsync(cases);
-await suite.WriteReportsAsync(report, "./artifacts"); // report.json + report.html
+var report = await suite.RunAsync(smoke);
+var outDir = ReportPaths.ResolveReportDirectory("./artifacts"); // honors LLMEVAL_REPORT_DIR
+await suite.WriteReportsAsync(report, outDir); // report.json + .html + .md + .csv
 
-if (!report.MeetsPassRate(0.9))
-    throw new Exception($"Pass rate {report.PassRate:P0} below threshold");
+report.ShouldMeetPassRate(0.9, because: "CI pass-rate threshold");
+
+var diff = await BaselineComparer.CompareToBaselineFileAsync(report, "baseline-report.json");
+if (diff.HasRegressions)
+    throw new Exception(diff.ToSummary());
 ```
 
-Dataset fields: `id`, `question`, `actual`, `expected`, `evaluationType`, `matchingType`, `threshold`, optional `provider`, `endpoint`, `model`, `isReferenceDoc`, `referenceDocuments`.
+Dataset fields: `id`, `question`, `actual`, `expected`, `evaluationType`, `matchingType`, `threshold`, optional `provider`, `endpoint`, `model`, `schema`, `isReferenceDoc`, `referenceDocuments`, `tags`.
 
-Formats: JSON array, JSONL, or `{ "cases": [ ... ] }`.
+Formats: JSON array, JSONL, CSV (header row; `tags` as `smoke;ci`), or `{ "cases": [ ... ] }`.
+
+CI templates: see repo `samples/ci` (GitHub Actions + Azure DevOps) for pass-rate failure + report artifact publish.
 
 ## Providers
 
@@ -253,6 +290,7 @@ Formats: JSON array, JSONL, or `{ "cases": [ ... ] }`.
 ## Notes
 
 - Prefer `Temperature=0` for deterministic judge / grounding runs in CI.
-- Default semantic matching uses **TF-IDF**. `GloveModel` / `SemanticSimilarityEvaluator` are obsolete and not used by `AdvancedEvaluationService`.
+- Default semantic matching uses **TF-IDF** (not embeddings). `GloveModel` / `SemanticSimilarityEvaluator` are obsolete and not used by `AdvancedEvaluationService`.
+- Register custom DirectEvaluation metrics with `MetricRegistry` without forking core.
 - Repository: https://github.com/sooraj171/LLMEval
-- Changelog / migration: see repo `CHANGELOG.md` (v2.0.0+ keeps the classic `EvaluateAsync` API).
+- Changelog / migration: see repo `CHANGELOG.md` (v2.x keeps the classic `EvaluateAsync` API).

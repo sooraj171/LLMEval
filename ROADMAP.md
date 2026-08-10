@@ -8,8 +8,8 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 | 1 | v2.0.0 | Adoption | **Done** |
 | 2 | v2.1.0 | Evaluation Engine & Datasets | **Done** |
 | 3 | v2.2.0 | Test Framework & CI Reporting | **Done** |
-| 4 | v3.0.0 | Architecture & Ecosystem | **Next** |
-| 5 | v3.x | Community & Polish | Planned |
+| 4 | v3.0.0 | Architecture & Ecosystem | **Done** |
+| 5 | v3.x | Community & Polish | **Next** |
 
 ---
 
@@ -150,9 +150,11 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 
 ---
 
-## Phase 4 — v3.0.0 Architecture & Ecosystem
+## Phase 4 — v3.0.0 Architecture & Ecosystem (**Done**)
 
-**Status:** **Next**
+**Shipped in:** package version `3.0.0`. Tag when publishing: `v3.0.0`
+
+**Status:** **Done**
 
 ### In scope
 
@@ -168,14 +170,24 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 
 ### Definition of Done
 
-- Multi-package strategy documented; main package still one-line install
-- Migration guide; ROADMAP marks Phase 5 next
+- [x] Multi-package strategy documented; main package still one-line install
+- [x] Migration guide; ROADMAP marks Phase 5 next
+- [x] Claude + Groq + Mistral providers
+- [x] `STAF.LLMEval.SemanticKernel` package
+- [x] ASP.NET `AddLLMEval(IConfiguration)` (Aspire deferred as separate package)
+
+### Key files
+
+- `LLMEval.Abstractions/`, `LLMEval.Core/`, `LLMEval/` (meta + TypeForwards)
+- `LLMEval.SemanticKernel/`
+- `docs/PACKAGES.md`, `docs/MIGRATION-v3.md`
+- `CHANGELOG.md`, `README.md`, this file
 
 ---
 
 ## Phase 5 — v3.x Community & Polish
 
-**Status:** Planned
+**Status:** **Next**
 
 ### In scope
 
@@ -196,4 +208,4 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 - **Backward compatibility** unless explicitly approved for that release.
 - **Async-first**, nullable enabled, XML docs on public APIs.
 - **Deliverables per phase:** code, unit tests, sample/docs touch, CHANGELOG, migration notes, ROADMAP + rule status update.
-- Prefer **one package** until Phase 4; avoid empty NuGets.
+- Prefer **one package** until Phase 4; Phase 4+ may split packages with `STAF.LLMEval` meta remaining the default install.

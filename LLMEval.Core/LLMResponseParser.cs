@@ -163,6 +163,52 @@ namespace LLMEval
             }
             catch { return null; }
         }
+
+        public static LLMParseResult ParseClaudeEvaluationResponse(string jsonResponse)
+        {
+            try
+            {
+                var content = GetRawContentFromClaudeResponse(jsonResponse);
+                if (!string.IsNullOrEmpty(content))
+                    return ParseLLMOutput(content);
+                return new LLMParseResult { ScoreString = "0", Description = "Could not extract evaluation from LLM response." };
+            }
+            catch (JsonException ex)
+            {
+                return new LLMParseResult { ScoreString = "0", Description = $"Error deserializing LLM response: {ex.Message}\nRaw Response: {jsonResponse}" };
+            }
+            catch (Exception ex)
+            {
+                return new LLMParseResult { ScoreString = "0", Description = $"An unexpected error occurred while parsing the LLM response: {ex.Message}\nRaw Response: {jsonResponse}" };
+            }
+        }
+
+        /// <summary>Extracts raw text from Anthropic Messages API JSON for use with <see cref="GroundingJudgeParser"/>.</summary>
+        public static string? GetRawContentFromClaudeResponse(string jsonResponse)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(jsonResponse);
+                if (!doc.RootElement.TryGetProperty("content", out var content) || content.ValueKind != JsonValueKind.Array)
+                    return null;
+
+                foreach (var block in content.EnumerateArray())
+                {
+                    if (block.TryGetProperty("type", out var type)
+                        && type.GetString() == "text"
+                        && block.TryGetProperty("text", out var text))
+                    {
+                        return text.GetString();
+                    }
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 
     // Define the necessary classes to deserialize the Gemini response

@@ -166,6 +166,15 @@ public class AiProviderFactoryTests
 
         var azure = factory.CreateProvider(ProviderType.AzureOpenAI, httpClient);
         Assert.IsType<AzureOpenAIProvider>(azure);
+
+        var claude = factory.CreateProvider(ProviderType.Claude, httpClient);
+        Assert.IsType<ClaudeProvider>(claude);
+
+        var groq = factory.CreateProvider(ProviderType.Groq, httpClient);
+        Assert.IsType<GroqProvider>(groq);
+
+        var mistral = factory.CreateProvider(ProviderType.Mistral, httpClient);
+        Assert.IsType<MistralProvider>(mistral);
     }
 
     [Fact]

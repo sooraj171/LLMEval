@@ -1,10 +1,5 @@
 namespace LLMEval
 {
-    public interface IEvaluationService
-    {
-        Task<EvaluationResult> EvaluateAsync(EvaluationRequest request, CancellationToken cancellationToken = default);
-    }
-
     public class AdvancedEvaluationService : IEvaluationService
     {
         private readonly IAiProviderFactory _providerFactory;
@@ -218,6 +213,9 @@ namespace LLMEval
                 ProviderType.Ollama => LLMResponseParser.GetRawContentFromOllamaResponse(jsonResponse),
                 ProviderType.OpenAI => LLMResponseParser.GetRawContentFromOpenAIResponse(jsonResponse),
                 ProviderType.AzureOpenAI => LLMResponseParser.GetRawContentFromOpenAIResponse(jsonResponse),
+                ProviderType.Claude => LLMResponseParser.GetRawContentFromClaudeResponse(jsonResponse),
+                ProviderType.Groq => LLMResponseParser.GetRawContentFromOpenAIResponse(jsonResponse),
+                ProviderType.Mistral => LLMResponseParser.GetRawContentFromOpenAIResponse(jsonResponse),
                 _ => null
             };
         }
@@ -257,7 +255,14 @@ namespace LLMEval
                 {
                     parsedResult = LLMResponseParser.ParseOllamaEvaluationResponse(llmResponseJson);
                 }
-                else if (request.ProviderType == ProviderType.OpenAI || request.ProviderType == ProviderType.AzureOpenAI)
+                else if (request.ProviderType == ProviderType.Claude)
+                {
+                    parsedResult = LLMResponseParser.ParseClaudeEvaluationResponse(llmResponseJson);
+                }
+                else if (request.ProviderType == ProviderType.OpenAI
+                         || request.ProviderType == ProviderType.AzureOpenAI
+                         || request.ProviderType == ProviderType.Groq
+                         || request.ProviderType == ProviderType.Mistral)
                 {
                     parsedResult = LLMResponseParser.ParseOpenAIEvaluationResponse(llmResponseJson);
                 }

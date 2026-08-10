@@ -296,7 +296,7 @@ public class EvaluationSuite
 
         var json = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(jsonPath, json, cancellationToken).ConfigureAwait(false);
-        await File.WriteAllTextAsync(htmlPath, HtmlReportWriter.Write(result), cancellationToken).ConfigureAwait(false);
+        await File.WriteAllTextAsync(htmlPath, HtmlResult.Write(result), cancellationToken).ConfigureAwait(false);
         await File.WriteAllTextAsync(mdPath, MarkdownReportWriter.Write(result), cancellationToken).ConfigureAwait(false);
         await File.WriteAllTextAsync(csvPath, CsvReportWriter.Write(result), cancellationToken).ConfigureAwait(false);
     }
@@ -462,42 +462,6 @@ internal static class CsvDatasetParser
         fields.Add(sb.ToString());
         return fields;
     }
-}
-
-internal static class HtmlReportWriter
-{
-    public static string Write(SuiteRunResult result)
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine("<!DOCTYPE html><html><head><meta charset=\"utf-8\"/><title>STAF.LLMEval Report</title>");
-        sb.AppendLine("<style>body{font-family:Segoe UI,sans-serif;margin:2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:.5rem;text-align:left}th{background:#f5f5f5}.pass{color:#0a7}.fail{color:#c00}pre{white-space:pre-wrap}</style>");
-        sb.AppendLine("</head><body>");
-        sb.AppendLine("<h1>STAF.LLMEval Suite Report</h1>");
-        sb.AppendLine($"<p>Started: {Encode(result.StartedAt.ToString("u"))}<br/>Completed: {Encode(result.CompletedAt.ToString("u"))}</p>");
-        sb.AppendLine($"<p><strong>Pass rate:</strong> {result.PassRate:P1} ({result.Passed}/{result.Total})</p>");
-        if (result.TotalUsage?.TotalTokens != null)
-            sb.AppendLine($"<p><strong>Tokens:</strong> {result.TotalUsage.TotalTokens} (prompt {result.TotalUsage.PromptTokens}, completion {result.TotalUsage.CompletionTokens})</p>");
-        sb.AppendLine("<table><thead><tr><th>Id</th><th>Passed</th><th>Score</th><th>Metric</th><th>Question / Prompt</th><th>Expected</th><th>Actual</th><th>Details</th></tr></thead><tbody>");
-        foreach (var c in result.Cases)
-        {
-            var cls = c.Passed ? "pass" : "fail";
-            sb.AppendLine("<tr>");
-            sb.AppendLine($"<td>{Encode(c.Id)}</td>");
-            sb.AppendLine($"<td class=\"{cls}\">{(c.Passed ? "PASS" : "FAIL")}</td>");
-            sb.AppendLine($"<td>{c.Score:0.###}</td>");
-            sb.AppendLine($"<td>{Encode(c.MetricName)}</td>");
-            sb.AppendLine($"<td><pre>{Encode(c.Question)}</pre></td>");
-            sb.AppendLine($"<td><pre>{Encode(c.Expected)}</pre></td>");
-            sb.AppendLine($"<td><pre>{Encode(c.Actual)}</pre></td>");
-            sb.AppendLine($"<td><pre>{Encode(c.Details)}</pre></td>");
-            sb.AppendLine("</tr>");
-        }
-        sb.AppendLine("</tbody></table></body></html>");
-        return sb.ToString();
-    }
-
-    private static string Encode(string? value) =>
-        System.Net.WebUtility.HtmlEncode(value ?? string.Empty);
 }
 
 internal static class MarkdownReportWriter

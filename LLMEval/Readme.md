@@ -4,7 +4,13 @@
 
 Score outputs with **pluggable metrics** (exact, keyword, TF-IDF semantic similarity, JSON/schema, relevance, heuristic grounding), **LLM-as-judge**, and **RAG grounding / hallucination detection**. Includes a fluent `Eval` API, test assertions, Options/DI, JSON/JSONL/CSV evaluation suites, golden baseline comparison, and HTML/JSON/Markdown/CSV reports.
 
-**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 3.0.0 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
+**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 3.1.0 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
+
+## Release notes — 3.1.0
+
+- **Community:** CONTRIBUTING.md, Discussions guidance, best practices / performance docs, blog outline
+- **Benchmarks:** `benchmarks/LLMEval.Benchmarks` + CI smoke
+- NuGet metadata/tags refreshed — **no API breaks** vs 3.0.0
 
 ## Release notes — 3.0.0
 

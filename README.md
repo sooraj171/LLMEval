@@ -4,8 +4,8 @@
 
 Use it to run **exact match**, **semantic similarity**, **LLM-as-judge**, and **RAG groundedness / hallucination detection** against golden answers or reference documents—with a fluent API, assertions, evaluation suites, and HTML/JSON reports. Works with **OpenAI**, **Azure OpenAI**, **Gemini**, **Ollama**, **Claude**, **Groq**, and **Mistral** on **.NET 8 / 9 / 10**.
 
-[![NuGet](https://img.shields.io/badge/NuGet-v3.0.0-0B3D91?logo=nuget&logoColor=white)](https://www.nuget.org/packages/STAF.LLMEval)
-**v3.0.0** · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT · [Release notes](CHANGELOG.md) · [Packages](docs/PACKAGES.md) · [Migrate to v3](docs/MIGRATION-v3.md)
+[![NuGet](https://img.shields.io/badge/NuGet-v3.1.0-0B3D91?logo=nuget&logoColor=white)](https://www.nuget.org/packages/STAF.LLMEval)
+**v3.1.0** · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT · [Release notes](CHANGELOG.md) · [Packages](docs/PACKAGES.md) · [Migrate to v3](docs/MIGRATION-v3.md) · [Contributing](CONTRIBUTING.md)
 
 ## Who is this for?
 
@@ -175,19 +175,22 @@ var service = new AdvancedEvaluationService(new AiProviderFactory(), new HttpCli
 
 Optional cost estimate when usage is present: set `Configuration["InputCostPer1M"]` / `OutputCostPer1M` (USD per 1M tokens).
 
-Optional cost estimate when usage is present: set `Configuration["InputCostPer1M"]` / `OutputCostPer1M` (USD per 1M tokens).
-
 ## Samples & docs
 
 | Doc | Purpose |
 |-----|---------|
 | [`samples/MinimalXunit`](samples/MinimalXunit) | Copy-paste xUnit sample (no API keys) + traits + baseline CI check |
 | [`samples/ci`](samples/ci) | GitHub Actions + Azure DevOps templates (threshold fail + artifacts) |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to contribute + GitHub Discussions prompt |
+| [`docs/BEST-PRACTICES.md`](docs/BEST-PRACTICES.md) | Eval / CI best practices |
+| [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) | Cost model, parallelism, benchmarks |
+| [`docs/BLOG-OUTLINE.md`](docs/BLOG-OUTLINE.md) | Blog / companion sample ideas |
 | [`docs/PACKAGES.md`](docs/PACKAGES.md) | Multi-package layout (meta / Core / Abstractions / SK) |
 | [`docs/MIGRATION-v3.md`](docs/MIGRATION-v3.md) | Upgrade guide from 2.x → 3.0 |
+| [`benchmarks/LLMEval.Benchmarks`](benchmarks/LLMEval.Benchmarks) | BenchmarkDotNet hot-path suite |
 | [`LLMEval/Readme.md`](LLMEval/Readme.md) | Full package / API guide (also on NuGet) |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release notes |
-| [`ROADMAP.md`](ROADMAP.md) | Release phases (Phase 4 done; Phase 5 next) |
+| [`ROADMAP.md`](ROADMAP.md) | Release phases (Phase 5 done; maintenance) |
 
 ## Backward compatibility
 
@@ -195,7 +198,9 @@ v3 keeps `IEvaluationService.EvaluateAsync` / `EvaluationRequest` (rebuild requi
 
 `EvaluationRequest.ModelName` maps to `Configuration["Model"]` when Model is unset. Semantic Direct matching uses **TF-IDF** (`MatchingType = "semantic"`); the old GloVe helpers are obsolete. Unknown matching types fail with a clear error (register a custom metric instead of relying on exact fallback).
 
-## Release notes (v3.0.0)
+## Release notes (v3.1.0)
+
+**3.1.0** — Community & polish: CONTRIBUTING, best practices / performance docs, blog outline, BenchmarkDotNet CI smoke, NuGet metadata refresh.
 
 **3.0.0** — Core/Abstractions split + meta package type-forwards; Claude / Groq / Mistral; optional Semantic Kernel package; `AddLLMEval(IConfiguration)`.
 
@@ -207,4 +212,4 @@ v3 keeps `IEvaluationService.EvaluateAsync` / `EvaluationRequest` (rebuild requi
 
 **2.0.0** — Multi-target `net8.0` / `net9.0` / `net10.0`; fluent `Eval.Direct()` / `Judge()` / `Grounding()`; assertions; DI/Options; JSON/JSONL suites + HTML/JSON reports; Azure OpenAI; classic API unchanged.
 
-Full details: [`CHANGELOG.md`](CHANGELOG.md). Install: `dotnet add package STAF.LLMEval --version 3.0.0`
+Full details: [`CHANGELOG.md`](CHANGELOG.md). Install: `dotnet add package STAF.LLMEval --version 3.1.0`

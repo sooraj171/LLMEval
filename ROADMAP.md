@@ -9,7 +9,7 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 | 2 | v2.1.0 | Evaluation Engine & Datasets | **Done** |
 | 3 | v2.2.0 | Test Framework & CI Reporting | **Done** |
 | 4 | v3.0.0 | Architecture & Ecosystem | **Done** |
-| 5 | v3.x | Community & Polish | **Next** |
+| 5 | v3.1.0 | Community & Polish | **Done** |
 
 ---
 
@@ -185,9 +185,11 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 
 ---
 
-## Phase 5 — v3.x Community & Polish
+## Phase 5 — v3.1.0 Community & Polish (**Done**)
 
-**Status:** **Next**
+**Shipped in:** package version `3.1.0`. Tag when publishing: `v3.1.0`
+
+**Status:** **Done**
 
 ### In scope
 
@@ -196,10 +198,26 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 - Extra sample repositories / blog outline (content may live outside repo)
 - Performance guide, best practices docs
 
+### Out of scope
+
+- New providers / Aspire / Playwright / MCP (deferred unless demanded)
+
 ### Definition of Done
 
-- CONTRIBUTING.md + benchmarks smoke run in CI
-- ROADMAP reflects maintenance mode or new phases as needed
+- [x] CONTRIBUTING.md + benchmarks smoke run in CI
+- [x] ROADMAP reflects maintenance mode
+
+### Key files
+
+- `CONTRIBUTING.md`, `docs/BEST-PRACTICES.md`, `docs/PERFORMANCE.md`, `docs/BLOG-OUTLINE.md`
+- `benchmarks/LLMEval.Benchmarks/`, `.github/workflows/ci.yml`
+- `CHANGELOG.md`, `README.md`, this file
+
+---
+
+## Maintenance
+
+Phases 1–5 are **complete**. Further work is demand-driven (new providers, Aspire/Playwright/MCP, companion samples). Open a GitHub Discussion or Issue before large scope.
 
 ---
 

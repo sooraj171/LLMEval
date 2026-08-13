@@ -19,9 +19,9 @@ When the user says **implement phase N**, **do phase N**, **ship phase N**, or *
 
 | Field | Value |
 |-------|--------|
-| Current shipped | **v3.0.0** (Phase 4 Architecture & Ecosystem) |
-| Next to implement | **Phase 5 → v3.x Community & Polish** |
-| After Phase 5 | Maintenance / new phases as needed |
+| Current shipped | **v3.1.0** (Phase 5 Community & Polish) |
+| Next to implement | **Maintenance** (demand-driven; no planned phase) |
+| After | New phases only if added to ROADMAP.md |
 
 ## Non-negotiables
 
@@ -37,4 +37,4 @@ Update in the same PR/session:
 1. `ROADMAP.md` — mark phase **Done**, set next phase **Next**, note version tag.
 2. This rule’s **Status** table — Current shipped / Next to implement / After.
 3. `CHANGELOG.md` — release notes + migration notes.
-4. Briefly tell the user the next phrase to run (e.g. “implement phase 2”).
+4. Briefly tell the user the next phrase to run (e.g. “implement phase 2”), or that the roadmap is in maintenance.

@@ -11,14 +11,14 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
 
     <PackageId>STAF.LLMEval.SemanticKernel</PackageId>
-    <Version>3.0.0</Version>
+    <Version>3.1.0</Version>
     <Title>STAF.LLMEval.SemanticKernel — Semantic Kernel integration</Title>
     <Authors>Sooraj Ramachandran</Authors>
     <Company>Sooraj Ramachandran</Company>
     <Product>STAF.LLMEval</Product>
     <Description>Semantic Kernel integration for STAF.LLMEval: IAiProvider adapter over IChatCompletionService / Kernel for LLM-as-judge and grounding evaluations.</Description>
-    <PackageTags>LLM;LLM-evaluation;Semantic-Kernel;AI-testing;STAF</PackageTags>
-    <PackageReleaseNotes>STAF.LLMEval.SemanticKernel 3.0.0 — Initial Semantic Kernel integration. See CHANGELOG.md.</PackageReleaseNotes>
+    <PackageTags>LLM;LLM-evaluation;Semantic-Kernel;AI-testing;AI-evaluation;dotnet;net8;net9;net10;STAF</PackageTags>
+    <PackageReleaseNotes>STAF.LLMEval.SemanticKernel 3.1.0 — Community &amp; polish (aligned with STAF.LLMEval 3.1.0). See CHANGELOG.md.</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/sooraj171/LLMEval</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/sooraj171/LLMEval</PackageProjectUrl>

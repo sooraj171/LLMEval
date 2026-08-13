@@ -29,6 +29,7 @@ jobs:
           dotnet restore LLMEval.sln
           dotnet restore LLMEval.Tests/LLMEval.Tests.csproj
           dotnet restore samples/MinimalXunit/MinimalXunit.csproj
+          dotnet restore benchmarks/LLMEval.Benchmarks/LLMEval.Benchmarks.csproj
 
       - name: Build and test (library)
         run: dotnet test LLMEval.Tests/LLMEval.Tests.csproj --configuration Release --verbosity normal
@@ -40,6 +41,11 @@ jobs:
             --configuration Release \
             --verbosity normal \
             --filter "Category=LLMEval"
+
+      - name: Benchmarks smoke (short in-process)
+        run: |
+          dotnet run -c Release --project benchmarks/LLMEval.Benchmarks/LLMEval.Benchmarks.csproj -- \
+            --filter "*"
 
       - name: Upload LLMEval report artifacts
         if: always()

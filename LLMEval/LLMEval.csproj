@@ -12,20 +12,20 @@
 
     <!-- Meta-package: one-line install pulls Core + Abstractions; TypeForwards preserve assembly identity -->
     <PackageId>STAF.LLMEval</PackageId>
-    <Version>3.0.0</Version>
+    <Version>3.1.0</Version>
     <Title>STAF.LLMEval — .NET LLM Evaluation and AI Testing Framework</Title>
     <Authors>Sooraj Ramachandran</Authors>
     <Company>Sooraj Ramachandran</Company>
     <Product>STAF.LLMEval</Product>
-    <Description>STAF.LLMEval is a .NET library and AI testing framework for evaluating LLM and GenAI responses in unit tests and CI/CD. Score AI outputs with pluggable metrics (exact, keyword, TF-IDF semantic similarity, JSON/schema validation, relevance, heuristic grounding), LLM-as-judge, and RAG groundedness / hallucination detection. Includes fluent Eval API, rich assertions, Options/DI, JSON/JSONL/CSV evaluation suites, golden baseline comparison, HTML/JSON/Markdown/CSV reports, and GitHub Actions / Azure DevOps CI templates. Works with OpenAI, Azure OpenAI, Google Gemini, Ollama, Anthropic Claude, Groq, and Mistral on .NET 8/9/10. This meta-package depends on STAF.LLMEval.Core (and Abstractions); optional STAF.LLMEval.SemanticKernel for Semantic Kernel integration.</Description>
-    <PackageTags>LLM;LLM-evaluation;LLM-as-judge;AI;AI-evaluation;AI-testing;GenAI;generative-AI;ChatGPT;GPT;OpenAI;Azure-OpenAI;AzureOpenAI;Gemini;Ollama;Claude;Anthropic;Groq;Mistral;RAG;RAG-evaluation;grounding;groundedness;hallucination;hallucination-detection;semantic-similarity;TF-IDF;exact-match;json-schema;relevance;golden-dataset;baseline-comparison;evaluation-suite;CSV;AI-assertions;unit-testing;xUnit;MSTest;NUnit;CI-CD;GitHub-Actions;Azure-DevOps;pass-rate;dotnet;net8;net9;net10;fluent-API;Semantic-Kernel;STAF</PackageTags>
+    <Description>STAF.LLMEval is a .NET library and AI testing framework for evaluating LLM and GenAI responses in unit tests and CI/CD. Score AI outputs with pluggable metrics (exact, keyword, TF-IDF semantic similarity, JSON/schema validation, relevance, heuristic grounding), LLM-as-judge, and RAG groundedness / hallucination detection. Includes fluent Eval API, rich assertions, Options/DI, JSON/JSONL/CSV evaluation suites, golden baseline comparison, STAF-style HTML/JSON/Markdown/CSV reports, GitHub Actions / Azure DevOps CI templates, BenchmarkDotNet hot-path suite, and contributor docs. Works with OpenAI, Azure OpenAI, Google Gemini, Ollama, Anthropic Claude, Groq, and Mistral on .NET 8/9/10. Meta-package depends on STAF.LLMEval.Core (+ Abstractions); optional STAF.LLMEval.SemanticKernel.</Description>
+    <PackageTags>LLM;LLM-evaluation;LLM-as-judge;AI;AI-evaluation;AI-testing;GenAI;generative-AI;ChatGPT;GPT;OpenAI;Azure-OpenAI;AzureOpenAI;Gemini;Ollama;Claude;Anthropic;Groq;Mistral;RAG;RAG-evaluation;grounding;groundedness;hallucination;hallucination-detection;semantic-similarity;TF-IDF;exact-match;json-schema;relevance;golden-dataset;baseline-comparison;evaluation-suite;CSV;AI-assertions;unit-testing;xUnit;MSTest;NUnit;CI-CD;GitHub-Actions;Azure-DevOps;pass-rate;dotnet;net8;net9;net10;fluent-API;Semantic-Kernel;BenchmarkDotNet;best-practices;performance;STAF</PackageTags>
     <PackageReleaseNotes>
-STAF.LLMEval 3.0.0 — Architecture &amp; Ecosystem
+STAF.LLMEval 3.1.0 — Community &amp; Polish
 
-- Multi-package: STAF.LLMEval (meta) → Core + Abstractions; TypeForwards for BC
-- Providers: Claude, Groq, Mistral (+ existing OpenAI / Azure / Gemini / Ollama)
-- Optional STAF.LLMEval.SemanticKernel package
-- ASP.NET Core helper: AddLLMEval(IConfiguration)
+- CONTRIBUTING.md + GitHub Discussions guidance
+- Best practices and performance docs; blog/sample outline
+- BenchmarkDotNet hot-path suite with CI smoke
+- NuGet metadata/tags refreshed for discoverability
 
 See https://github.com/sooraj171/LLMEval/blob/main/CHANGELOG.md
     </PackageReleaseNotes>

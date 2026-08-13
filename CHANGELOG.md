@@ -4,6 +4,28 @@ All notable changes to **STAF.LLMEval** (NuGet: [STAF.LLMEval](https://www.nuget
 
 STAF.LLMEval is a .NET LLM evaluation / AI testing framework for AI response evaluation, LLM-as-judge scoring, RAG grounding, and hallucination detection.
 
+## [3.1.0] - 2026-08-12
+
+### Summary
+
+Community & polish: contribution guide, Discussions prompt, best practices and performance docs, blog/sample outline, BenchmarkDotNet hot-path suite with CI smoke, and refreshed NuGet metadata—no breaking API changes.
+
+### Added
+
+- **[`CONTRIBUTING.md`](CONTRIBUTING.md)** — setup, PR checklist, GitHub Discussions guidance
+- **Docs:** [`docs/BEST-PRACTICES.md`](docs/BEST-PRACTICES.md), [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md), [`docs/BLOG-OUTLINE.md`](docs/BLOG-OUTLINE.md)
+- **`benchmarks/LLMEval.Benchmarks`** — BenchmarkDotNet suite (exact / keyword / semantic metrics, JSON parse, HtmlResult)
+- CI step: short in-process benchmark smoke on PR/push
+
+### Changed
+
+- Package version **3.1.0** (meta, Core, Abstractions, SemanticKernel)
+- NuGet description / tags / release notes expanded for discoverability
+
+### Migration from 3.0.x
+
+- No API or behavior changes required; bump package version only
+
 ## [3.0.0] - 2026-08-06
 
 ### Summary

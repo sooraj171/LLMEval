@@ -11,14 +11,14 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
 
     <PackageId>STAF.LLMEval.Core</PackageId>
-    <Version>3.0.0</Version>
+    <Version>3.1.0</Version>
     <Title>STAF.LLMEval.Core — LLM evaluation engine</Title>
     <Authors>Sooraj Ramachandran</Authors>
     <Company>Sooraj Ramachandran</Company>
     <Product>STAF.LLMEval</Product>
     <Description>Core evaluation engine for STAF.LLMEval: fluent Eval API, metrics, suite/reports, assertions, and providers (OpenAI, Azure OpenAI, Gemini, Ollama, Claude, Groq, Mistral). Prefer the STAF.LLMEval meta-package for one-line install.</Description>
-    <PackageTags>LLM;LLM-evaluation;LLM-as-judge;AI-testing;RAG;Claude;Groq;Mistral;OpenAI;Gemini;Ollama;STAF</PackageTags>
-    <PackageReleaseNotes>STAF.LLMEval.Core 3.0.0 — Architecture split + Claude/Groq/Mistral. See CHANGELOG.md.</PackageReleaseNotes>
+    <PackageTags>LLM;LLM-evaluation;LLM-as-judge;AI-testing;AI-evaluation;RAG;Claude;Groq;Mistral;OpenAI;Gemini;Ollama;BenchmarkDotNet;dotnet;net8;net9;net10;STAF</PackageTags>
+    <PackageReleaseNotes>STAF.LLMEval.Core 3.1.0 — Community &amp; polish (aligned with STAF.LLMEval 3.1.0). See CHANGELOG.md.</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/sooraj171/LLMEval</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/sooraj171/LLMEval</PackageProjectUrl>

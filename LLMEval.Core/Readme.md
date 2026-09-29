@@ -2,9 +2,22 @@
 
 **STAF.LLMEval** is a .NET **LLM evaluation** and **AI testing** library for validating **generative AI** responses (ChatGPT, GPT, Gemini, Ollama, Azure OpenAI, Claude, Groq, Mistral) in unit tests and CI pipelines.
 
-Score outputs with **pluggable metrics** (exact, keyword, TF-IDF semantic similarity, JSON/schema, relevance, heuristic grounding), **LLM-as-judge**, and **RAG grounding / hallucination detection**. Includes a fluent `Eval` API, test assertions, Options/DI, JSON/JSONL/CSV evaluation suites, golden baseline comparison, and HTML/JSON/Markdown/CSV reports.
+Score outputs with **pluggable metrics** (exact, keyword, TF-IDF or **embeddings** semantic similarity, JSON/schema, relevance, heuristic grounding), **LLM-as-judge**, and **RAG grounding / hallucination detection**. Includes a fluent `Eval` API, test assertions, Options/DI, JSON/JSONL/CSV evaluation suites, golden baseline comparison, opt-in run-history HTML trends, and HTML/JSON/Markdown/CSV reports.
 
-**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 3.1.0 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
+**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 3.2.1 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
+
+## Release notes — 3.2.1
+
+- Dependency refresh: Microsoft.Extensions 10.0.12, Semantic Kernel 1.80.1, SourceLink 10.0.401
+- Docs: embeddings, opt-in run history, QuickStart / OpenAIJudge samples
+- **No API breaks** vs 3.2.0
+
+## Release notes — 3.2.0
+
+- **Embeddings:** `Eval.Direct().EmbeddingSemantic(...)` / `MatchingType = embedding-semantic` (OpenAI/Azure or `IEmbeddingProvider`). TF-IDF `semantic` unchanged
+- **Run history (opt-in):** `LLMEvalOptions.EnableRunHistory` → JSONL + HTML pass-rate sparkline
+- **Samples:** `samples/QuickStart` (no keys), `samples/OpenAIJudge` (`OPENAI_API_KEY`)
+- No API breaks vs 3.1.0
 
 ## Release notes — 3.1.0
 
@@ -30,7 +43,7 @@ Score outputs with **pluggable metrics** (exact, keyword, TF-IDF semantic simila
 
 ## Release notes — 2.1.0
 
-- **Plugin metrics:** `IEvaluationMetric` / `MetricRegistry` (exact, keyword, semantic TF-IDF, json, schema, relevance, grounded-heuristic + custom)
+- **Plugin metrics:** `IEvaluationMetric` / `MetricRegistry` (exact, keyword, semantic TF-IDF, embedding-semantic, json, schema, relevance, grounded-heuristic + custom)
 - **Datasets:** CSV (+ JSON/JSONL); golden **baseline comparison** for CI
 - **Reports:** Markdown + CSV in addition to HTML/JSON
 - **Usage:** best-effort `TokenUsage` / cost when providers return usage
@@ -64,6 +77,7 @@ Other Direct matchers:
 ```csharp
 await Eval.Direct().Keyword(actual, expected).WithThreshold(0.5).EvaluateAsync();
 await Eval.Direct().Semantic(actual, expected).WithThreshold(0.3).EvaluateAsync(); // TF-IDF (not embeddings)
+await Eval.Direct().EmbeddingSemantic(actual, expected).WithApiKey(apiKey).WithModel("text-embedding-3-small").WithThreshold(0.75).EvaluateAsync();
 await Eval.Direct().Json("""{"ok":true}""").EvaluateAsync();
 await Eval.Direct().Schema(actualJson, jsonSchema).EvaluateAsync();
 await Eval.Direct().Relevance(question, actual).WithThreshold(0.2).EvaluateAsync();
@@ -171,6 +185,7 @@ Still supported on `EvaluationRequest.Configuration`:
 | `Model` | Model name or Azure deployment name |
 | `Temperature` | Sampling temperature (prefer `"0"` in CI) |
 | `ApiVersion` | Azure OpenAI API version (optional) |
+| `EmbeddingModel` / `EmbeddingDeployment` | Embeddings model or Azure embeddings deployment (`embedding-semantic`) |
 | `InputCostPer1M` / `OutputCostPer1M` | Optional USD per 1M tokens for `EstimatedCostUsd` |
 
 `EvaluationRequest.ModelName` is copied into `Configuration["Model"]` when Model is not set.
@@ -182,7 +197,7 @@ Still supported on `EvaluationRequest.Configuration`:
 - `Question`, `AiResponse`, `GoldenOutput`, optional `Schema`
 - `ProviderType`: `Ollama`, `OpenAI`, `Gemini`, `AzureOpenAI`, `Claude`, `Groq`, `Mistral`
 - `Endpoint`, `Configuration`, `PassThreshold`, `ModelName`
-- `MatchingType`: `exact`, `keyword`, `semantic` (TF-IDF), `json`, `schema`, `relevance`, `grounded-heuristic`, or any registered custom name
+- `MatchingType`: `exact`, `keyword`, `semantic` (TF-IDF), `embedding-semantic`, `json`, `schema`, `relevance`, `grounded-heuristic`, or any registered custom name
 - `EvaluationType`: `DirectEvaluation`, `LLMAsJudge`, `GroundedAnswerCheck`
 - `IsReferenceDoc` — treat `GoldenOutput` as a reference document for LLM-as-judge
 - `ReferenceDocuments` — optional multi-doc list for grounding (overrides `GoldenOutput` when set)
@@ -280,6 +295,10 @@ var outDir = ReportPaths.ResolveReportDirectory("./artifacts"); // honors LLMEVA
 await suite.WriteReportsAsync(report, outDir); // report.json + .html + .md + .csv
 // report.html uses the STAF HtmlResult skin (same visual language as STAF.Playwright)
 
+// Opt-in: JSONL history + pass-rate sparkline on report.html (off by default)
+var suiteWithHistory = new EvaluationSuite(evalService, new LLMEvalOptions { EnableRunHistory = true });
+await suiteWithHistory.WriteReportsAsync(report, outDir);
+
 report.ShouldMeetPassRate(0.9, because: "CI pass-rate threshold");
 
 var diff = await BaselineComparer.CompareToBaselineFileAsync(report, "baseline-report.json");
@@ -292,6 +311,8 @@ Dataset fields: `id`, `question`, `actual`, `expected`, `evaluationType`, `match
 Formats: JSON array, JSONL, CSV (header row; `tags` as `smoke;ci`), or `{ "cases": [ ... ] }`.
 
 CI templates: see repo `samples/ci` (GitHub Actions + Azure DevOps) for pass-rate failure + report artifact publish.
+
+Zero-key sample: repo `samples/QuickStart`. Live judge sample: `samples/OpenAIJudge` (set `OPENAI_API_KEY`).
 
 ## Providers
 
@@ -312,7 +333,7 @@ ASP.NET / host config: `services.AddLLMEval(configuration)` binds the `LLMEval` 
 ## Notes
 
 - Prefer `Temperature=0` for deterministic judge / grounding runs in CI.
-- Default semantic matching uses **TF-IDF** (not embeddings). `GloveModel` / `SemanticSimilarityEvaluator` are obsolete and not used by `AdvancedEvaluationService`.
+- Default semantic matching uses **TF-IDF**. Use `MatchingType = embedding-semantic` (or `Eval.Direct().EmbeddingSemantic`) for embeddings. `GloveModel` / `SemanticSimilarityEvaluator` are obsolete and not used by `AdvancedEvaluationService`.
 - Register custom DirectEvaluation metrics with `MetricRegistry` without forking core.
 - Repository: https://github.com/sooraj171/LLMEval
 - Changelog / migration: see repo `CHANGELOG.md` and `docs/MIGRATION-v3.md` (classic `EvaluateAsync` API retained).

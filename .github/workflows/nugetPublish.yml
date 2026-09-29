@@ -20,7 +20,11 @@ jobs:
 
       - name: Restore
         run: |
-          dotnet restore LLMEval.sln
+          # Skip LLMEval.sln (includes Windows-only LLMEvalTool).
+          dotnet restore LLMEval.Abstractions/LLMEval.Abstractions.csproj
+          dotnet restore LLMEval.Core/LLMEval.Core.csproj
+          dotnet restore LLMEval/LLMEval.csproj
+          dotnet restore LLMEval.SemanticKernel/LLMEval.SemanticKernel.csproj
           dotnet restore LLMEval.Tests/LLMEval.Tests.csproj
 
       - name: Test

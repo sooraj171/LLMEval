@@ -63,7 +63,7 @@ namespace LLMEval
                 {
                     return await EvaluateWithLLMAsync(provider, request, cancellationToken);
                 }
-                return await EvaluateDirectlyAsync(request);
+                return await EvaluateDirectlyAsync(request, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -303,7 +303,7 @@ namespace LLMEval
             }
         }
 
-        private async Task<EvaluationResult> EvaluateDirectlyAsync(EvaluationRequest request)
+        private async Task<EvaluationResult> EvaluateDirectlyAsync(EvaluationRequest request, CancellationToken cancellationToken)
         {
             var metricName = string.IsNullOrWhiteSpace(request.MatchingType) ? "exact" : request.MatchingType.Trim();
             if (!_metrics.TryGet(metricName, out var metric))
@@ -324,10 +324,12 @@ namespace LLMEval
                 Expected = request.GoldenOutput,
                 Schema = request.Schema,
                 PassThreshold = request.PassThreshold,
-                Configuration = request.Configuration
+                Configuration = request.Configuration,
+                Endpoint = request.Endpoint,
+                ProviderType = request.ProviderType
             };
 
-            var metricResult = await metric.EvaluateAsync(context).ConfigureAwait(false);
+            var metricResult = await metric.EvaluateAsync(context, cancellationToken).ConfigureAwait(false);
             return new EvaluationResult
             {
                 Score = metricResult.Score,

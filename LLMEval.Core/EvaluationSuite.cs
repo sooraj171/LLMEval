@@ -296,7 +296,19 @@ public class EvaluationSuite
 
         var json = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(jsonPath, json, cancellationToken).ConfigureAwait(false);
-        await File.WriteAllTextAsync(htmlPath, HtmlResult.Write(result), cancellationToken).ConfigureAwait(false);
+
+        IReadOnlyList<RunHistoryEntry>? history = null;
+        if (_options.EnableRunHistory)
+        {
+            var historyPath = string.IsNullOrWhiteSpace(_options.RunHistoryPath)
+                ? Path.Combine(outputDirectory, "history.jsonl")
+                : _options.RunHistoryPath;
+            var take = _options.TrendHistoryLength > 0 ? _options.TrendHistoryLength : 20;
+            history = await RunHistoryStore.AppendAndReadAsync(historyPath, result, take, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        await File.WriteAllTextAsync(htmlPath, HtmlResult.Write(result, history), cancellationToken).ConfigureAwait(false);
         await File.WriteAllTextAsync(mdPath, MarkdownReportWriter.Write(result), cancellationToken).ConfigureAwait(false);
         await File.WriteAllTextAsync(csvPath, CsvReportWriter.Write(result), cancellationToken).ConfigureAwait(false);
     }

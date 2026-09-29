@@ -47,8 +47,9 @@ Official templates: [`samples/ci`](../samples/ci).
 ## Metrics
 
 - Register custom metrics via `MetricRegistry` / `AddLLMEvalMetric<T>()` instead of forking Core.
-- Semantic Direct matching is **TF-IDF**, not embeddings — choose thresholds accordingly.
+- Semantic Direct matching is **TF-IDF** by default (`MatchingType = semantic`). Use `embedding-semantic` (OpenAI/Azure or a custom `IEmbeddingProvider`) when paraphrases matter.
 - Unknown `MatchingType` values fail clearly; do not rely on silent exact fallback.
+- Suite HTML trend charts are **opt-in** (`LLMEvalOptions.EnableRunHistory`); leaving it off keeps `WriteReportsAsync` identical to 3.1.
 
 ## Packages
 

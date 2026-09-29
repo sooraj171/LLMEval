@@ -1,0 +1,56 @@
+name: Bug report
+description: Report incorrect behavior, a build/test failure, or a docs mismatch
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Search [existing issues](https://github.com/sooraj171/LLMEval/issues) first.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what actually happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Smallest code sample or suite JSON that shows the problem. Remove API keys.
+      render: csharp
+    validations:
+      required: true
+  - type: input
+    id: package-version
+    attributes:
+      label: STAF.LLMEval version
+      placeholder: "3.2.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: tfm
+    attributes:
+      label: Target framework
+      options:
+        - net8.0
+        - net9.0
+        - net10.0
+        - multiple / other
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, SDK (`dotnet --list-sdks`), provider (OpenAI / Azure / Ollama / none).
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / report snippet
+      description: Assertion message, `report.json` excerpt, or CI log. Redact secrets.
+    validations:
+      required: false

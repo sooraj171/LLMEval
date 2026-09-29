@@ -26,13 +26,26 @@ jobs:
 
       - name: Restore
         run: |
-          dotnet restore LLMEval.sln
+          # Do not restore LLMEval.sln — it includes LLMEvalTool (net10.0-windows WinForms),
+          # which fails on ubuntu-latest without EnableWindowsTargeting.
+          dotnet restore LLMEval.Abstractions/LLMEval.Abstractions.csproj
+          dotnet restore LLMEval.Core/LLMEval.Core.csproj
+          dotnet restore LLMEval/LLMEval.csproj
+          dotnet restore LLMEval.SemanticKernel/LLMEval.SemanticKernel.csproj
           dotnet restore LLMEval.Tests/LLMEval.Tests.csproj
+          dotnet restore samples/QuickStart/QuickStart.csproj
+          dotnet restore samples/OpenAIJudge/OpenAIJudge.csproj
           dotnet restore samples/MinimalXunit/MinimalXunit.csproj
           dotnet restore benchmarks/LLMEval.Benchmarks/LLMEval.Benchmarks.csproj
 
       - name: Build and test (library)
         run: dotnet test LLMEval.Tests/LLMEval.Tests.csproj --configuration Release --verbosity normal
+
+      - name: Run QuickStart sample (zero API keys)
+        run: dotnet test samples/QuickStart/QuickStart.csproj --configuration Release --verbosity normal
+
+      - name: Run OpenAIJudge sample (skips without OPENAI_API_KEY)
+        run: dotnet test samples/OpenAIJudge/OpenAIJudge.csproj --configuration Release --verbosity normal
 
       - name: Run MinimalXunit sample (pass-rate gate)
         run: |
@@ -46,6 +59,14 @@ jobs:
         run: |
           dotnet run -c Release --project benchmarks/LLMEval.Benchmarks/LLMEval.Benchmarks.csproj -- \
             --filter "*"
+
+      - name: Pack (verify nupkg)
+        run: |
+          mkdir -p ./nupkg
+          dotnet pack LLMEval.Abstractions/LLMEval.Abstractions.csproj --configuration Release --output ./nupkg
+          dotnet pack LLMEval.Core/LLMEval.Core.csproj --configuration Release --output ./nupkg
+          dotnet pack LLMEval/LLMEval.csproj --configuration Release --output ./nupkg
+          dotnet pack LLMEval.SemanticKernel/LLMEval.SemanticKernel.csproj --configuration Release --output ./nupkg
 
       - name: Upload LLMEval report artifacts
         if: always()

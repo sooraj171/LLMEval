@@ -11,14 +11,14 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
 
     <PackageId>STAF.LLMEval.Abstractions</PackageId>
-    <Version>3.1.0</Version>
+    <Version>3.2.1</Version>
     <Title>STAF.LLMEval.Abstractions — LLM evaluation contracts</Title>
     <Authors>Sooraj Ramachandran</Authors>
     <Company>Sooraj Ramachandran</Company>
     <Product>STAF.LLMEval</Product>
-    <Description>Abstractions and DTOs for STAF.LLMEval: IEvaluationService, IAiProvider, EvaluationRequest/Result, metrics contracts, and options. Prefer the STAF.LLMEval meta-package for one-line install.</Description>
-    <PackageTags>LLM;LLM-evaluation;AI-testing;AI-evaluation;abstractions;dotnet;net8;net9;net10;STAF</PackageTags>
-    <PackageReleaseNotes>STAF.LLMEval.Abstractions 3.1.0 — Community &amp; polish release (aligned with STAF.LLMEval 3.1.0). See CHANGELOG.md.</PackageReleaseNotes>
+    <Description>Abstractions and DTOs for STAF.LLMEval: IEvaluationService, IAiProvider, IEmbeddingProvider, EvaluationRequest/Result, metrics contracts, and options (including opt-in run history). Prefer the STAF.LLMEval meta-package for one-line install.</Description>
+    <PackageTags>LLM;LLM-evaluation;AI-testing;AI-evaluation;abstractions;embeddings;dotnet;net8;net9;net10;STAF</PackageTags>
+    <PackageReleaseNotes>STAF.LLMEval.Abstractions 3.2.1 — SourceLink 10.0.401 + docs (aligned with STAF.LLMEval 3.2.1). See CHANGELOG.md.</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/sooraj171/LLMEval</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/sooraj171/LLMEval</PackageProjectUrl>
@@ -32,7 +32,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

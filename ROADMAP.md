@@ -10,6 +10,7 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 | 3 | v2.2.0 | Test Framework & CI Reporting | **Done** |
 | 4 | v3.0.0 | Architecture & Ecosystem | **Done** |
 | 5 | v3.1.0 | Community & Polish | **Done** |
+| 6 | v3.2.0 | Adoption quality (docs, embeddings, history, samples) | **Done** |
 
 ---
 
@@ -215,9 +216,45 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 
 ---
 
+## Phase 6 — v3.2.0 Adoption quality (**Done**)
+
+**Shipped in:** package version `3.2.0` (docs/deps patch `3.2.1`). Tag when publishing: `v3.2.1`
+
+**Status:** **Done**
+
+### In scope
+
+- README overhaul (problem-first, badges, Exact() quick start, broken-link fixes)
+- CONTRIBUTING (build/test/metric/provider), GitHub issue + PR templates, CI pack + sample tests
+- Embeddings semantic metric via `MetricRegistry` (OpenAI/Azure + `IEmbeddingProvider`); TF-IDF stays default
+- Opt-in suite JSONL history + HTML pass-rate sparkline
+- `samples/QuickStart` and `samples/OpenAIJudge`
+
+### Out of scope
+
+- Breaking changes to `EvaluateAsync` / `EvaluationRequest` / fluent `Eval.*`
+- New chat providers, Aspire, Playwright, MCP
+
+### Definition of Done
+
+- [x] README leads with why-this-exists; badges; zero-key quick start
+- [x] Issue/PR templates + CONTRIBUTING metric/provider sections
+- [x] Embeddings metric + unit tests; TF-IDF default unchanged
+- [x] Opt-in run history; default `WriteReportsAsync` unchanged
+- [x] QuickStart `dotnet test` with no keys; OpenAIJudge skipped without key
+
+### Key files
+
+- `README.md`, `CONTRIBUTING.md`, `.github/`
+- `LLMEval.Core/Metrics/EmbeddingSemanticMetric.cs`, `LLMEval.Core/Embeddings/`
+- `LLMEval.Core/RunHistoryStore.cs`, `LLMEval.Core/HtmlResult.cs`
+- `samples/QuickStart/`, `samples/OpenAIJudge/`
+
+---
+
 ## Maintenance
 
-Phases 1–5 are **complete**. Further work is demand-driven (new providers, Aspire/Playwright/MCP, companion samples). Open a GitHub Discussion or Issue before large scope.
+Phases 1–6 are **complete**. Further work is demand-driven (new providers, Aspire/Playwright/MCP, companion samples). Open a GitHub Discussion or Issue before large scope.
 
 ---
 

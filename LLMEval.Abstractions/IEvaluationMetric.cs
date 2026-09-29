@@ -16,6 +16,12 @@ public sealed class MetricContext
     /// <summary>Optional provider configuration (pricing keys, metric params, etc.).</summary>
     public IReadOnlyDictionary<string, string> Configuration { get; init; }
         = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Optional HTTP endpoint (Azure resource URL or embeddings URL) from the evaluation request.</summary>
+    public string? Endpoint { get; init; }
+
+    /// <summary>Request provider type (used by embeddings to distinguish OpenAI vs Azure OpenAI).</summary>
+    public ProviderType ProviderType { get; init; }
 }
 
 /// <summary>Result produced by an <see cref="IEvaluationMetric"/>.</summary>

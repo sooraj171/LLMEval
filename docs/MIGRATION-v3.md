@@ -12,7 +12,7 @@ Under the hood, types live in **Abstractions** + **Core** assemblies; the meta p
 
 ## What you must do
 
-1. Bump to **3.0.0** (or later 3.x).
+1. Bump to **3.0.0** or later **3.x** (current is **3.2.1**).
 2. Rebuild your project (required after the assembly split).
 3. Optionally adopt new providers: `ProviderType.Claude`, `Groq`, `Mistral`.
 
@@ -42,3 +42,11 @@ Only needed for multi-package library designs. See [PACKAGES.md](PACKAGES.md).
 - **Major version:** public types moved to `LLMEval.Abstractions` / `LLMEval.Core` assemblies (namespaces unchanged).
 - Recompile is required; copying only the old single `LLMEval.dll` without the new dependencies will fail.
 - `ProviderType` gains Claude / Groq / Mistral — switch/exhaustive matches may need updating.
+
+## Later 3.x (additive)
+
+| Version | What was added (no breaks to `EvaluateAsync`) |
+|---------|-----------------------------------------------|
+| **3.2.1** | Dependency refresh (Extensions 10.0.12, SK 1.80.1). Same APIs as 3.2.0. |
+| **3.2.0** | `Eval.Direct().EmbeddingSemantic()` / `IEmbeddingProvider`; `LLMEvalOptions.EnableRunHistory`; `samples/QuickStart` + `samples/OpenAIJudge` |
+| **3.1.0** | CONTRIBUTING, benchmarks, community docs |

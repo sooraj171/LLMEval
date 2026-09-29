@@ -1,8 +1,9 @@
 # STAF.LLMEval.SemanticKernel
 
-Optional [Semantic Kernel](https://github.com/microsoft/semantic-kernel) integration for **STAF.LLMEval**.
+Optional [Semantic Kernel](https://github.com/microsoft/semantic-kernel) integration for **STAF.LLMEval** **3.2.1** (depends on `Microsoft.SemanticKernel.Abstractions` 1.80.1).
 
 ```bash
+dotnet add package STAF.LLMEval
 dotnet add package STAF.LLMEval.SemanticKernel
 ```
 
@@ -22,4 +23,6 @@ IAiProviderFactory factory = new SemanticKernelProviderFactory(kernel);
 var eval = new AdvancedEvaluationService(factory);
 ```
 
-Judge and grounding calls use the Kernel chat service; DirectEvaluation metrics do not require SK.
+**LLM-as-judge** and **Grounding** use the Kernel chat service. **DirectEvaluation** (exact / keyword / TF-IDF `Semantic` / `EmbeddingSemantic` / JSON / schema) does not require Semantic Kernel.
+
+See the [root README](../README.md) for embeddings, suite reports, and opt-in run history.

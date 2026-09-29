@@ -4,6 +4,50 @@ All notable changes to **STAF.LLMEval** (NuGet: [STAF.LLMEval](https://www.nuget
 
 STAF.LLMEval is a .NET LLM evaluation / AI testing framework for AI response evaluation, LLM-as-judge scoring, RAG grounding, and hallucination detection.
 
+## [3.2.1] - 2026-09-28
+
+### Summary
+
+Dependency and docs refresh: latest Microsoft.Extensions / SourceLink / Semantic Kernel / test SDK packages, and README files brought in line with 3.2 embeddings, run history, and samples. No public API changes vs 3.2.0.
+
+### Changed
+
+- Package version **3.2.1** (meta, Core, Abstractions, SemanticKernel)
+- **Dependencies:** `Microsoft.Extensions.*` 10.0.12, `Microsoft.SourceLink.GitHub` 10.0.401, `Microsoft.SemanticKernel.Abstractions` 1.80.1
+- **Dev/test:** `Microsoft.NET.Test.Sdk` 18.10.1, `xunit.runner.visualstudio` 3.1.5 (still xUnit 2.9.3 — runner 4.x is xUnit v3), `coverlet.collector` 10.1.0, `BenchmarkDotNet` 0.15.8
+- NuGet and repo READMEs: embeddings metric, opt-in run history, QuickStart / OpenAIJudge samples
+
+### Migration from 3.2.0
+
+- No API or behavior changes required; bump package version only
+- Apps that pin older `Microsoft.Extensions.*` 8.x will unify to 10.0.12 (still supports `net8.0`)
+- `STAF.LLMEval.SemanticKernel` now depends on Semantic Kernel **1.80.1**
+
+## [3.2.0] - 2026-09-04
+
+### Summary
+
+Adoption quality: README/discoverability, contributor & CI hygiene, embeddings-based semantic similarity (opt-in metric), opt-in suite run history with an HTML pass-rate trend, and copy-paste samples — no breaking API changes.
+
+### Added
+
+- **Embeddings metric:** `EmbeddingSemanticMetric` (`MatchingType = embedding-semantic`), fluent `Eval.Direct().EmbeddingSemantic(...)`, pluggable `IEmbeddingProvider` with `OpenAIEmbeddingProvider` (OpenAI + Azure OpenAI). TF-IDF `semantic` remains the zero-dependency default.
+- **Opt-in run history:** `LLMEvalOptions.EnableRunHistory` appends JSONL summaries and draws a pass-rate sparkline on `report.html`. Default behavior unchanged.
+- **Samples:** `samples/QuickStart` (no API keys) and `samples/OpenAIJudge` (skipped unless `OPENAI_API_KEY` is set)
+- **Contributor hygiene:** issue templates (bug / feature), PR template, CONTRIBUTING coverage for metrics and providers; CI packs nupkgs on PR and runs QuickStart
+
+### Changed
+
+- Package version **3.2.0** (meta, Core, Abstractions, SemanticKernel)
+- Root README leads with the CI/non-determinism problem, dynamic NuGet/build/license/TFM badges, and a single copy-paste Exact() quick start
+- `EvaluateDirectlyAsync` forwards `CancellationToken` and request `Endpoint` / `ProviderType` into `MetricContext`
+
+### Migration from 3.1.x
+
+- No API or behavior changes required; bump package version only
+- To use embeddings: `Eval.Direct().EmbeddingSemantic(actual, expected).WithApiKey(...).WithModel("text-embedding-3-small")` or `registry.Register(new EmbeddingSemanticMetric(myProvider))`
+- To enable history: `new EvaluationSuite(service, new LLMEvalOptions { EnableRunHistory = true })`
+
 ## [3.1.0] - 2026-08-12
 
 ### Summary

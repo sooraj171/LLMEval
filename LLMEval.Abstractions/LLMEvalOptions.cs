@@ -26,6 +26,21 @@ public class LLMEvalOptions
     /// <summary>Max concurrent judge calls when running suites / grounding.</summary>
     public int MaxDegreeOfParallelism { get; set; } = 4;
 
+    /// <summary>
+    /// When true, suite report writing appends a JSONL history record
+    /// and includes a pass-rate trend sparkline on the HTML report. Default is false (no behavior change).
+    /// </summary>
+    public bool EnableRunHistory { get; set; }
+
+    /// <summary>
+    /// Path to the JSONL history file. When null and <see cref="EnableRunHistory"/> is true,
+    /// defaults to <c>{outputDirectory}/history.jsonl</c>.
+    /// </summary>
+    public string? RunHistoryPath { get; set; }
+
+    /// <summary>Number of recent runs to plot in the HTML trend view (default 20).</summary>
+    public int TrendHistoryLength { get; set; } = 20;
+
     /// <summary>Builds the provider <see cref="Dictionary{TKey,TValue}"/> expected by existing providers.</summary>
     public Dictionary<string, string> ToConfigurationDictionary()
     {

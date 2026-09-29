@@ -3,9 +3,9 @@
 | Package | Role | Install |
 |---------|------|---------|
 | **[STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval)** | **Meta-package (recommended)** — one-line install; type-forwards into Core | `dotnet add package STAF.LLMEval` |
-| [STAF.LLMEval.Core](https://www.nuget.org/packages/STAF.LLMEval.Core) | Evaluation engine, providers, suite/reports, fluent API | pulled by meta |
-| [STAF.LLMEval.Abstractions](https://www.nuget.org/packages/STAF.LLMEval.Abstractions) | Contracts & DTOs (`IEvaluationService`, `EvaluationRequest`, …) | pulled by Core |
-| [STAF.LLMEval.SemanticKernel](https://www.nuget.org/packages/STAF.LLMEval.SemanticKernel) | Optional Semantic Kernel `IAiProvider` adapter | `dotnet add package STAF.LLMEval.SemanticKernel` |
+| [STAF.LLMEval.Core](https://www.nuget.org/packages/STAF.LLMEval.Core) | Evaluation engine, providers, suite/reports (incl. opt-in run history), fluent API, TF-IDF + embeddings metrics | pulled by meta |
+| [STAF.LLMEval.Abstractions](https://www.nuget.org/packages/STAF.LLMEval.Abstractions) | Contracts & DTOs (`IEvaluationService`, `IEmbeddingProvider`, `EvaluationRequest`, …) | pulled by Core |
+| [STAF.LLMEval.SemanticKernel](https://www.nuget.org/packages/STAF.LLMEval.SemanticKernel) | Optional Semantic Kernel `IAiProvider` adapter (SK 1.80.1) | `dotnet add package STAF.LLMEval.SemanticKernel` |
 
 ## When to reference what
 
@@ -17,8 +17,8 @@
 
 | Assembly | Contents |
 |----------|----------|
-| `LLMEval.Abstractions` | `ProviderType`, `EvaluationRequest`/`Result`, `IAiProvider*`, `IEvaluationService`, metrics contracts, `LLMEvalOptions` |
-| `LLMEval.Core` | `AdvancedEvaluationService`, `Eval.*`, providers, suite, asserts, metrics implementations |
+| `LLMEval.Abstractions` | `ProviderType`, `EvaluationRequest`/`Result`, `IAiProvider*`, `IEmbeddingProvider`, `IEvaluationService`, metrics contracts, `LLMEvalOptions` (incl. `EnableRunHistory`) |
+| `LLMEval.Core` | `AdvancedEvaluationService`, `Eval.*` (incl. `EmbeddingSemantic`), providers, suite, asserts, metrics implementations |
 | `LLMEval` | Meta assembly with `TypeForwardedTo` shims (binary-friendly upgrade path) |
 | `LLMEval.SemanticKernel` | `SemanticKernelChatProvider`, `AddLLMEvalSemanticKernel` |
 
@@ -32,4 +32,4 @@ No separate Aspire package in v3. Use configuration binding:
 services.AddLLMEval(builder.Configuration); // binds section "LLMEval"
 ```
 
-Playwright / MCP remain out of scope until requested (see ROADMAP Phase 4/5).
+Playwright / MCP remain out of scope until requested (see ROADMAP). Current package version: **3.2.1**.

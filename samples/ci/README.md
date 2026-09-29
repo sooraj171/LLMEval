@@ -1,6 +1,6 @@
-# CI templates for STAF.LLMEval (Phase 3 / v2.2)
+# CI templates for STAF.LLMEval
 
-Official pipeline samples that:
+Official pipeline samples (shipped with v2.2+, still current in **3.2.1**) that:
 
 1. Run evaluation tests (xUnit sample by default)
 2. Fail the job when assertions / `ShouldMeetPassRate` fail
@@ -34,7 +34,7 @@ Then upload / publish that folder as a pipeline artifact.
 
 ## Filtering eval tests
 
-Use [`EvalTraits`](../../LLMEval/EvalTraits.cs) with xUnit `[Trait]`:
+Use [`EvalTraits`](../../LLMEval.Core/EvalTraits.cs) with xUnit `[Trait]`:
 
 ```bash
 dotnet test --filter "Category=LLMEval"
@@ -49,4 +49,6 @@ var smoke = cases.FilterByTags("smoke"); // or EvalTraits.Smoke
 
 ## Wire into this repo
 
-The main [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) already runs the MinimalXunit sample and uploads reports. Copy these templates into consumer repos and point `dotnet test` at your own test project.
+The main [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) already runs **QuickStart**, **OpenAIJudge** (skipped without `OPENAI_API_KEY`), and the MinimalXunit sample, then packs nupkgs and uploads reports. Copy these templates into consumer repos and point `dotnet test` at your own test project.
+
+Opt-in suite history (`LLMEvalOptions.EnableRunHistory`) writes `history.jsonl` next to `report.html` when you enable it in your tests.

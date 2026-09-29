@@ -1,0 +1,46 @@
+name: Feature request
+description: Propose a metric, provider, sample, or API improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For large API or breaking-change ideas, consider a [GitHub Discussion](https://github.com/sooraj171/LLMEval/discussions) RFC first.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is hard or missing today for .NET LLM evaluation in CI?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API / behavior
+      description: Sketch the surface (Eval.* helper, MatchingType name, provider, options). Call out whether it can stay source-compatible with EvaluateAsync / EvaluationRequest.
+      render: csharp
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Direct metric / embeddings
+        - LLM-as-judge
+        - Grounding / RAG
+        - Suite / reports / CI
+        - Provider
+        - Docs / samples
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints you considered
+      options:
+        - label: No break to IEvaluationService.EvaluateAsync / EvaluationRequest
+        - label: Works without a new NuGet dependency (or the dependency is optional)
+        - label: Testable without live API keys

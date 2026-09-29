@@ -51,6 +51,7 @@ public sealed class MetricRegistry
         Register(new ExactMatchMetric());
         Register(new KeywordMatchMetric());
         Register(new SemanticSimilarityMetric());
+        Register(new EmbeddingSemanticMetric());
         Register(new JsonValidityMetric());
         Register(new JsonSchemaMetric());
         Register(new RelevanceMetric());

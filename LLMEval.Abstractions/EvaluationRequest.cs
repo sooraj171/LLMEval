@@ -11,8 +11,8 @@ public class EvaluationRequest
     public Dictionary<string, string> Configuration { get; set; } = new Dictionary<string, string>();
 
     /// <summary>
-    /// DirectEvaluation metric name: exact, keyword, semantic (TF-IDF), json, schema, relevance, grounded-heuristic,
-    /// or any custom name registered on the metric registry.
+    /// DirectEvaluation metric name: exact, keyword, semantic (TF-IDF), embedding-semantic, json, schema,
+    /// relevance, grounded-heuristic, or any custom name registered on the metric registry.
     /// </summary>
     public string MatchingType { get; set; } = string.Empty;
 

@@ -172,6 +172,18 @@ public sealed class DirectEvaluationBuilder : EvaluationBuilderBase<DirectEvalua
         return this;
     }
 
+    /// <summary>
+    /// Cosine similarity of embedding vectors (MatchingType = embedding-semantic).
+    /// Requires an <see cref="IEmbeddingProvider"/> on the registry or Configuration["ApiKey"] for OpenAI/Azure OpenAI.
+    /// </summary>
+    public DirectEvaluationBuilder EmbeddingSemantic(string actual, string expected)
+    {
+        Request.AiResponse = actual;
+        Request.GoldenOutput = expected;
+        Request.MatchingType = "embedding-semantic";
+        return this;
+    }
+
     /// <summary>Validates that <paramref name="actual"/> is parseable JSON.</summary>
     public DirectEvaluationBuilder Json(string actual)
     {

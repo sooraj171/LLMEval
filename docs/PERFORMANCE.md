@@ -8,6 +8,7 @@ How to keep evaluation suites fast and predictable in CI.
 |------|---------------|--------|
 | Direct (`exact`, `keyword`, `json`, `schema`) | Lowest | CPU only |
 | Direct (`semantic` TF-IDF, `relevance`, `grounded-heuristic`) | Low–medium | CPU; grows with text length |
+| Direct (`embedding-semantic`) | Medium | One embeddings HTTP call per case (batch of 2 texts) |
 | LLM-as-judge | High | Network + tokens |
 | Grounding (per-claim judge calls) | Highest | One judge call **per statement**, sequential |
 

@@ -1,56 +1,10 @@
 # STAF.LLMEval
 
-**STAF.LLMEval** is a .NET **LLM evaluation** and **AI testing** library for validating **generative AI** responses (ChatGPT, GPT, Gemini, Ollama, Azure OpenAI, Claude, Groq, Mistral) in unit tests and CI pipelines.
+Testing non-deterministic LLM output with brittle string-equality asserts does not scale. STAF.LLMEval gives you pluggable metrics, LLM-as-judge, and RAG groundedness checks that run in CI.
 
-Score outputs with **pluggable metrics** (exact, keyword, TF-IDF or **embeddings** semantic similarity, JSON/schema, relevance, heuristic grounding), **LLM-as-judge**, and **RAG grounding / hallucination detection**. Includes a fluent `Eval` API, test assertions, Options/DI, JSON/JSONL/CSV evaluation suites, golden baseline comparison, opt-in run-history HTML trends, and HTML/JSON/Markdown/CSV reports.
+**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 3.3.0 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
 
-**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 3.2.1 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
-
-## Release notes — 3.2.1
-
-- Dependency refresh: Microsoft.Extensions 10.0.12, Semantic Kernel 1.80.1, SourceLink 10.0.401
-- Docs: embeddings, opt-in run history, QuickStart / OpenAIJudge samples
-- **No API breaks** vs 3.2.0
-
-## Release notes — 3.2.0
-
-- **Embeddings:** `Eval.Direct().EmbeddingSemantic(...)` / `MatchingType = embedding-semantic` (OpenAI/Azure or `IEmbeddingProvider`). TF-IDF `semantic` unchanged
-- **Run history (opt-in):** `LLMEvalOptions.EnableRunHistory` → JSONL + HTML pass-rate sparkline
-- **Samples:** `samples/QuickStart` (no keys), `samples/OpenAIJudge` (`OPENAI_API_KEY`)
-- No API breaks vs 3.1.0
-
-## Release notes — 3.1.0
-
-- **Community:** CONTRIBUTING.md, Discussions guidance, best practices / performance docs, blog outline
-- **Benchmarks:** `benchmarks/LLMEval.Benchmarks` + CI smoke
-- NuGet metadata/tags refreshed — **no API breaks** vs 3.0.0
-
-## Release notes — 3.0.0
-
-- **Multi-package:** `STAF.LLMEval` meta → `Core` + `Abstractions` (type forwards); still one-line install
-- **Providers:** Anthropic **Claude**, **Groq**, **Mistral** (+ OpenAI / Azure / Gemini / Ollama)
-- **Optional:** `STAF.LLMEval.SemanticKernel` for Semantic Kernel chat completion
-- **ASP.NET / Aspire-friendly:** `services.AddLLMEval(configuration)` binds section `LLMEval`
-- Migration: [docs/MIGRATION-v3.md](https://github.com/sooraj171/LLMEval/blob/main/docs/MIGRATION-v3.md) · packages: [docs/PACKAGES.md](https://github.com/sooraj171/LLMEval/blob/main/docs/PACKAGES.md)
-
-## Release notes — 2.2.0
-
-- **Richer asserts:** metric / grounding / usage in failure messages; optional `because:`; `ShouldMeetPassRate` for suite CI gates
-- **`EvalTraits`** + suite case **tags** / `FilterByTags` for CI filtering
-- **`LLMEVAL_REPORT_DIR`** / `ReportPaths` for artifact folders
-- **CI templates:** GitHub Actions + Azure DevOps (`samples/ci`) with pass-rate fail + report upload
-- Framework-specific NuGet packages not required — asserts stay in the main package
-
-## Release notes — 2.1.0
-
-- **Plugin metrics:** `IEvaluationMetric` / `MetricRegistry` (exact, keyword, semantic TF-IDF, embedding-semantic, json, schema, relevance, grounded-heuristic + custom)
-- **Datasets:** CSV (+ JSON/JSONL); golden **baseline comparison** for CI
-- **Reports:** Markdown + CSV in addition to HTML/JSON
-- **Usage:** best-effort `TokenUsage` / cost when providers return usage
-- **Grounding:** `GroundednessScore`, `HallucinationRate`
-- **Backward compatible** with `EvaluationRequest` / `EvaluateAsync`
-
-Full changelog: https://github.com/sooraj171/LLMEval/blob/main/CHANGELOG.md
+Score outputs with **pluggable metrics** (exact, keyword, TF-IDF or **embeddings** semantic similarity, JSON/schema, relevance, heuristic grounding), **LLM-as-judge**, and **RAG grounding / hallucination detection**. Includes a fluent `Eval` API, test assertions, Options/DI, JSON/JSONL/CSV evaluation suites, golden baseline comparison, opt-in run-history HTML trends, and HTML/JSON/Markdown/CSV reports. Works with ChatGPT, GPT, Gemini, Ollama, Azure OpenAI, Claude, Groq, and Mistral.
 
 ## Installation
 
@@ -76,8 +30,8 @@ Other Direct matchers:
 
 ```csharp
 await Eval.Direct().Keyword(actual, expected).WithThreshold(0.5).EvaluateAsync();
-await Eval.Direct().Semantic(actual, expected).WithThreshold(0.3).EvaluateAsync(); // TF-IDF (not embeddings)
-await Eval.Direct().EmbeddingSemantic(actual, expected).WithApiKey(apiKey).WithModel("text-embedding-3-small").WithThreshold(0.75).EvaluateAsync();
+await Eval.Direct().Semantic(actual, expected).WithThreshold(0.3).EvaluateAsync(); // TF-IDF; unchanged
+await Eval.Direct().SemanticEmbedding(actual, expected).WithProvider(EmbeddingProviderType.OpenAI).WithApiKey(apiKey).WithModel("text-embedding-3-small").WithThreshold(0.85).EvaluateAsync();
 await Eval.Direct().Json("""{"ok":true}""").EvaluateAsync();
 await Eval.Direct().Schema(actualJson, jsonSchema).EvaluateAsync();
 await Eval.Direct().Relevance(question, actual).WithThreshold(0.2).EvaluateAsync();
@@ -197,7 +151,7 @@ Still supported on `EvaluationRequest.Configuration`:
 - `Question`, `AiResponse`, `GoldenOutput`, optional `Schema`
 - `ProviderType`: `Ollama`, `OpenAI`, `Gemini`, `AzureOpenAI`, `Claude`, `Groq`, `Mistral`
 - `Endpoint`, `Configuration`, `PassThreshold`, `ModelName`
-- `MatchingType`: `exact`, `keyword`, `semantic` (TF-IDF), `embedding-semantic`, `json`, `schema`, `relevance`, `grounded-heuristic`, or any registered custom name
+- `MatchingType`: `exact`, `keyword`, `semantic` (TF-IDF), `semantic-embedding`, `embedding-semantic`, `json`, `schema`, `relevance`, `grounded-heuristic`, or any registered custom name
 - `EvaluationType`: `DirectEvaluation`, `LLMAsJudge`, `GroundedAnswerCheck`
 - `IsReferenceDoc` — treat `GoldenOutput` as a reference document for LLM-as-judge
 - `ReferenceDocuments` — optional multi-doc list for grounding (overrides `GoldenOutput` when set)
@@ -330,10 +284,64 @@ Optional: `STAF.LLMEval.SemanticKernel` — `AddLLMEvalSemanticKernel()` uses Ke
 
 ASP.NET / host config: `services.AddLLMEval(configuration)` binds the `LLMEval` section.
 
+## Release notes — 3.3.0
+
+- README leads with the evaluation problem, then install
+- **Opt-in embeddings:** `Eval.Direct().SemanticEmbedding(...)` / `MatchingType = semantic-embedding` (`embedding-semantic` still works). TF-IDF `semantic` is unchanged
+- A missing embedding provider throws `LLMEvalConfigurationException` (no TF-IDF fallback, no score of 0)
+- DI: `services.AddSingleton<IEmbeddingProvider, T>()` is picked up by `AddLLMEval`
+- NuGet package icon
+
+## Release notes — 3.2.1
+
+- Dependency refresh: Microsoft.Extensions 10.0.12, Semantic Kernel 1.80.1, SourceLink 10.0.401
+- Docs: embeddings, opt-in run history, QuickStart / OpenAIJudge samples
+- **No API breaks** vs 3.2.0
+
+## Release notes — 3.2.0
+
+- **Embeddings:** `Eval.Direct().EmbeddingSemantic(...)` / `MatchingType = embedding-semantic` (OpenAI/Azure or `IEmbeddingProvider`). TF-IDF `semantic` unchanged
+- **Run history (opt-in):** `LLMEvalOptions.EnableRunHistory` → JSONL + HTML pass-rate sparkline
+- **Samples:** `samples/QuickStart` (no keys), `samples/OpenAIJudge` (`OPENAI_API_KEY`)
+- No API breaks vs 3.1.0
+
+## Release notes — 3.1.0
+
+- **Community:** CONTRIBUTING.md, Discussions guidance, best practices / performance docs, blog outline
+- **Benchmarks:** `benchmarks/LLMEval.Benchmarks` + CI smoke
+- NuGet metadata/tags refreshed — **no API breaks** vs 3.0.0
+
+## Release notes — 3.0.0
+
+- **Multi-package:** `STAF.LLMEval` meta → `Core` + `Abstractions` (type forwards); still one-line install
+- **Providers:** Anthropic **Claude**, **Groq**, **Mistral** (+ OpenAI / Azure / Gemini / Ollama)
+- **Optional:** `STAF.LLMEval.SemanticKernel` for Semantic Kernel chat completion
+- **ASP.NET / Aspire-friendly:** `services.AddLLMEval(configuration)` binds section `LLMEval`
+- Migration: [docs/MIGRATION-v3.md](https://github.com/sooraj171/LLMEval/blob/main/docs/MIGRATION-v3.md) · packages: [docs/PACKAGES.md](https://github.com/sooraj171/LLMEval/blob/main/docs/PACKAGES.md)
+
+## Release notes — 2.2.0
+
+- **Richer asserts:** metric / grounding / usage in failure messages; optional `because:`; `ShouldMeetPassRate` for suite CI gates
+- **`EvalTraits`** + suite case **tags** / `FilterByTags` for CI filtering
+- **`LLMEVAL_REPORT_DIR`** / `ReportPaths` for artifact folders
+- **CI templates:** GitHub Actions + Azure DevOps (`samples/ci`) with pass-rate fail + report upload
+- Framework-specific NuGet packages not required — asserts stay in the main package
+
+## Release notes — 2.1.0
+
+- **Plugin metrics:** `IEvaluationMetric` / `MetricRegistry` (exact, keyword, semantic TF-IDF, embedding-semantic, json, schema, relevance, grounded-heuristic + custom)
+- **Datasets:** CSV (+ JSON/JSONL); golden **baseline comparison** for CI
+- **Reports:** Markdown + CSV in addition to HTML/JSON
+- **Usage:** best-effort `TokenUsage` / cost when providers return usage
+- **Grounding:** `GroundednessScore`, `HallucinationRate`
+- **Backward compatible** with `EvaluationRequest` / `EvaluateAsync`
+
+Full changelog: https://github.com/sooraj171/LLMEval/blob/main/CHANGELOG.md
+
 ## Notes
 
 - Prefer `Temperature=0` for deterministic judge / grounding runs in CI.
-- Default semantic matching uses **TF-IDF**. Use `MatchingType = embedding-semantic` (or `Eval.Direct().EmbeddingSemantic`) for embeddings. `GloveModel` / `SemanticSimilarityEvaluator` are obsolete and not used by `AdvancedEvaluationService`.
+- `MatchingType = semantic` is TF-IDF (no API key). `semantic-embedding` is the embeddings opt-in and requires a provider (`embedding-semantic` is the same metric). `GloveModel` / `SemanticSimilarityEvaluator` are obsolete and not used by `AdvancedEvaluationService`.
 - Register custom DirectEvaluation metrics with `MetricRegistry` without forking core.
 - Repository: https://github.com/sooraj171/LLMEval
 - Changelog / migration: see repo `CHANGELOG.md` and `docs/MIGRATION-v3.md` (classic `EvaluateAsync` API retained).

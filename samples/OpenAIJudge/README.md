@@ -14,4 +14,4 @@ export OPENAI_API_KEY="<your key>"
 dotnet test samples/OpenAIJudge/OpenAIJudge.csproj
 ```
 
-Uses `gpt-4o-mini` at temperature 0. Change `.WithModel(...)` if you prefer another chat model. Library version: **STAF.LLMEval 3.2.1**.
+Uses `gpt-4o-mini` at temperature 0. Change `.WithModel(...)` if you prefer another chat model. Library version: **STAF.LLMEval 3.3.0**.

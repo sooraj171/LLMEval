@@ -53,6 +53,20 @@ public abstract class EvaluationBuilderBase<TSelf>
         return Self;
     }
 
+    /// <summary>
+    /// Sets the embeddings backend for <c>semantic-embedding</c>.
+    /// Chat providers continue to use <see cref="WithProvider(ProviderType)"/>.
+    /// </summary>
+    public TSelf WithProvider(EmbeddingProviderType embeddingProvider)
+    {
+        Request.ProviderType = embeddingProvider switch
+        {
+            EmbeddingProviderType.AzureOpenAI => ProviderType.AzureOpenAI,
+            _ => ProviderType.OpenAI
+        };
+        return Self;
+    }
+
     public TSelf WithEndpoint(string endpoint)
     {
         Request.Endpoint = endpoint;
@@ -175,12 +189,26 @@ public sealed class DirectEvaluationBuilder : EvaluationBuilderBase<DirectEvalua
     /// <summary>
     /// Cosine similarity of embedding vectors (MatchingType = embedding-semantic).
     /// Requires an <see cref="IEmbeddingProvider"/> on the registry or Configuration["ApiKey"] for OpenAI/Azure OpenAI.
+    /// Prefer <see cref="SemanticEmbedding"/> for new code. A missing provider throws <see cref="LLMEvalConfigurationException"/>.
     /// </summary>
     public DirectEvaluationBuilder EmbeddingSemantic(string actual, string expected)
     {
         Request.AiResponse = actual;
         Request.GoldenOutput = expected;
-        Request.MatchingType = "embedding-semantic";
+        Request.MatchingType = EmbeddingSemanticMetric.CanonicalName;
+        return this;
+    }
+
+    /// <summary>
+    /// Opt-in embedding cosine similarity (MatchingType = semantic-embedding).
+    /// Does not change TF-IDF <see cref="Semantic"/>. Throws <see cref="LLMEvalConfigurationException"/>
+    /// when no <see cref="IEmbeddingProvider"/> or API key is configured.
+    /// </summary>
+    public DirectEvaluationBuilder SemanticEmbedding(string actual, string expected)
+    {
+        Request.AiResponse = actual;
+        Request.GoldenOutput = expected;
+        Request.MatchingType = EmbeddingSemanticMetric.AliasName;
         return this;
     }
 

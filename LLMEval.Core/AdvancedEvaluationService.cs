@@ -65,6 +65,10 @@ namespace LLMEval
                 }
                 return await EvaluateDirectlyAsync(request, cancellationToken);
             }
+            catch (LLMEvalConfigurationException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 return new EvaluationResult
@@ -335,7 +339,7 @@ namespace LLMEval
                 Score = metricResult.Score,
                 IsPassed = metricResult.IsPassed,
                 Details = metricResult.Details,
-                MetricName = metric.Name,
+                MetricName = metricName,
                 GroundednessScore = string.Equals(metric.Name, "grounded-heuristic", StringComparison.OrdinalIgnoreCase)
                     ? metricResult.Score
                     : null,

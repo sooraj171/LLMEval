@@ -3,12 +3,23 @@ using System.Text.Json;
 namespace LLMEval;
 
 /// <summary>
-/// Cosine similarity of embedding vectors (MatchingType = embedding-semantic).
+/// Cosine similarity of embedding vectors (<c>embedding-semantic</c> and <c>semantic-embedding</c>).
 /// Default backend is OpenAI / Azure OpenAI embeddings; inject <see cref="IEmbeddingProvider"/> to use another model.
 /// TF-IDF remains the zero-dependency default via MatchingType = semantic.
+/// A missing provider or API key throws <see cref="LLMEvalConfigurationException"/> instead of scoring zero.
 /// </summary>
 public sealed class EmbeddingSemanticMetric : IEvaluationMetric
 {
+    /// <summary>Canonical <see cref="IEvaluationMetric.Name"/> and MatchingType.</summary>
+    public const string CanonicalName = "embedding-semantic";
+
+    /// <summary>MatchingType alias registered to this same metric. Not the bare name "embedding".</summary>
+    public const string AliasName = "semantic-embedding";
+
+    /// <summary>Message thrown when neither an <see cref="IEmbeddingProvider"/> nor an API key is configured.</summary>
+    public const string MissingProviderMessage =
+        "SemanticEmbedding requires an IEmbeddingProvider. Configure via WithProvider(...) and WithApiKey(...), or register one with services.AddSingleton<IEmbeddingProvider, T>().";
+
     private readonly IEmbeddingProvider? _provider;
     private readonly HttpClient? _httpClient;
     private HttpClient? _ownedClient;
@@ -34,7 +45,12 @@ public sealed class EmbeddingSemanticMetric : IEvaluationMetric
         _httpClient = httpClient;
     }
 
-    public string Name => "embedding-semantic";
+    public string Name => CanonicalName;
+
+    /// <summary>True for <see cref="CanonicalName"/> and <see cref="AliasName"/> only.</summary>
+    public static bool IsEmbeddingMetricName(string name)
+        => string.Equals(name, CanonicalName, StringComparison.OrdinalIgnoreCase)
+           || string.Equals(name, AliasName, StringComparison.OrdinalIgnoreCase);
 
     public async Task<MetricResult> EvaluateAsync(MetricContext context, CancellationToken cancellationToken = default)
     {
@@ -68,10 +84,7 @@ public sealed class EmbeddingSemanticMetric : IEvaluationMetric
     {
         var config = context.Configuration ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (!HasApiKey(config))
-        {
-            throw new ArgumentException(
-                "embedding-semantic requires an IEmbeddingProvider or Configuration[\"ApiKey\"] for OpenAI/Azure OpenAI embeddings.");
-        }
+            throw new LLMEvalConfigurationException(MissingProviderMessage);
 
         var http = _httpClient ?? (_ownedClient ??= new HttpClient());
         return new OpenAIEmbeddingProvider(http, config, context.Endpoint, context.ProviderType);

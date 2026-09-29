@@ -1,6 +1,6 @@
 # CI templates for STAF.LLMEval
 
-Official pipeline samples (shipped with v2.2+, still current in **3.2.1**) that:
+Official pipeline samples (shipped with v2.2+, still current in **3.3.0**) that:
 
 1. Run evaluation tests (xUnit sample by default)
 2. Fail the job when assertions / `ShouldMeetPassRate` fail
@@ -50,5 +50,7 @@ var smoke = cases.FilterByTags("smoke"); // or EvalTraits.Smoke
 ## Wire into this repo
 
 The main [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) already runs **QuickStart**, **OpenAIJudge** (skipped without `OPENAI_API_KEY`), and the MinimalXunit sample, then packs nupkgs and uploads reports. Copy these templates into consumer repos and point `dotnet test` at your own test project.
+
+A public consumer that references the published NuGet package (so it can show up under NuGet “GitHub repositories”) lives at [sooraj171/LLMEval.Sample](https://github.com/sooraj171/LLMEval.Sample). It pins **2.2.0**, the latest release that restores without the unpublished `STAF.LLMEval.Core` package.
 
 Opt-in suite history (`LLMEvalOptions.EnableRunHistory`) writes `history.jsonl` next to `report.html` when you enable it in your tests.

@@ -1,12 +1,14 @@
 # STAF.LLMEval
 
-[![NuGet](https://img.shields.io/badge/NuGet-v3.2.1-0B3D91?logo=nuget&logoColor=white)](https://www.nuget.org/packages/STAF.LLMEval)
+[![NuGet](https://img.shields.io/badge/NuGet-v3.3.0-0B3D91?logo=nuget&logoColor=white)](https://www.nuget.org/packages/STAF.LLMEval)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/STAF.LLMEval.svg)](https://www.nuget.org/packages/STAF.LLMEval)
 [![Build](https://github.com/sooraj171/LLMEval/actions/workflows/ci.yml/badge.svg)](https://github.com/sooraj171/LLMEval/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
 [![.NET](https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010-512BD4?logo=dotnet)](https://www.nuget.org/packages/STAF.LLMEval)
 
-LLM outputs are non-deterministic: the same prompt can come back with different wording, extra clauses, or subtle hallucinations. Exact-string asserts flake in CI, and ad-hoc manual review does not scale. **STAF.LLMEval** is a .NET evaluation library that treats GenAI quality like any other test gate — start with zero-cost exact/keyword/JSON checks, then add TF-IDF or embeddings similarity, LLM-as-judge, and RAG grounding when you need them.
+Testing non-deterministic LLM output with brittle string-equality asserts does not scale. STAF.LLMEval gives you pluggable metrics, LLM-as-judge, and RAG groundedness checks that run in CI.
+
+Start with zero-cost exact, keyword, JSON, and TF-IDF checks. Opt in to embedding similarity when paraphrases matter — that path requires a provider and fails the build if one is missing.
 
 ## Quick start
 
@@ -33,13 +35,13 @@ result.ShouldPass();
 
 | Mode | Fluent entry | Use when |
 |------|----------------|----------|
-| **Direct** (`exact` / `keyword` / `semantic` TF-IDF / `embedding-semantic` / `json` / `schema` / `relevance` / `grounded-heuristic`) | `Eval.Direct()` | Golden-answer & structure checks. TF-IDF needs no keys; embeddings need an OpenAI/Azure embeddings endpoint |
+| **Direct** (`exact` / `keyword` / `semantic` TF-IDF / `semantic-embedding` / `json` / `schema` / `relevance` / `grounded-heuristic`) | `Eval.Direct()` | Golden-answer and structure checks. TF-IDF needs no keys. `semantic-embedding` needs an embeddings provider |
 | **LLM-as-judge** | `Eval.Judge()` | Semantic quality scoring via a chat provider |
 | **GroundedAnswerCheck** | `Eval.Grounding()` | RAG hallucination checks — each claim vs reference docs |
 
 ## Direct matchers
 
-`Eval.Direct()` needs no provider. TF-IDF `Semantic()` is the zero-dependency default for “are these similar?”; use `EmbeddingSemantic()` when paraphrases matter (requires an embeddings API key).
+`Eval.Direct()` needs no provider. TF-IDF `Semantic()` stays the zero-dependency check. `SemanticEmbedding()` is a separate opt-in for paraphrases and throws if you have not configured a provider.
 
 ```csharp
 await Eval.Direct().Exact("Paris", "Paris").EvaluateAsync();
@@ -66,15 +68,18 @@ var tfidf = await Eval.Direct()
 // typically a low score — little token overlap after stop-word removal
 
 var embeddings = await Eval.Direct()
-    .EmbeddingSemantic(actual, expected)
-    .WithApiKey(apiKey)                 // OpenAI or Azure OpenAI
+    .SemanticEmbedding(actual, expected)
+    .WithProvider(EmbeddingProviderType.OpenAI)
+    .WithApiKey(apiKey)
     .WithModel("text-embedding-3-small")
-    .WithThreshold(0.75)
+    .WithThreshold(0.85)
     .EvaluateAsync();
 // typically a high score — vectors are close even when wording differs
 ```
 
-Azure OpenAI: `.WithProvider(ProviderType.AzureOpenAI).WithEndpoint("https://YOUR_RESOURCE.openai.azure.com")` and set `Model` to the **embeddings deployment** name. Inject a custom `IEmbeddingProvider` via `MetricRegistry.Register(new EmbeddingSemanticMetric(provider))` if you are not using OpenAI.
+`MatchingType = semantic` stays TF-IDF. `semantic-embedding` (and the existing `embedding-semantic` alias) never falls back to TF-IDF. A missing provider throws `LLMEvalConfigurationException`.
+
+Azure OpenAI: `.WithProvider(EmbeddingProviderType.AzureOpenAI).WithEndpoint("https://YOUR_RESOURCE.openai.azure.com")` and set `Model` to the **embeddings deployment** name. Or register `services.AddSingleton<IEmbeddingProvider, T>()` before `AddLLMEval` if you are not using OpenAI. `Eval.Direct().EmbeddingSemantic(...)` remains supported.
 
 ## Judge, grounding, assertions
 
@@ -182,6 +187,7 @@ Optional cost estimate: `Configuration["InputCostPer1M"]` / `OutputCostPer1M` (U
 | [`samples/OpenAIJudge`](samples/OpenAIJudge) | LLM-as-judge sample (skipped unless `OPENAI_API_KEY` is set) |
 | [`samples/MinimalXunit`](samples/MinimalXunit) | Traits, suites, baseline CI check |
 | [`samples/ci`](samples/ci) | GitHub Actions + Azure DevOps templates |
+| [LLMEval.Sample](https://github.com/sooraj171/LLMEval.Sample) | Public repo that references the NuGet package |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Build, test, add a metric or provider, PR checklist |
 | [`docs/BEST-PRACTICES.md`](docs/BEST-PRACTICES.md) | Eval / CI best practices |
 | [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) | Cost model, parallelism, benchmarks |
@@ -195,9 +201,11 @@ Optional cost estimate: `Configuration["InputCostPer1M"]` / `OutputCostPer1M` (U
 
 v3 keeps `IEvaluationService.EvaluateAsync` / `EvaluationRequest` (rebuild required after the assembly split). Prefer `Eval.*` and assertions for new code.
 
-`EvaluationRequest.ModelName` maps to `Configuration["Model"]` when Model is unset. `MatchingType = "semantic"` is **TF-IDF**; use `"embedding-semantic"` for embeddings. Unknown matching types fail with a clear error (register a custom metric instead of relying on exact fallback).
+`EvaluationRequest.ModelName` maps to `Configuration["Model"]` when Model is unset. `MatchingType = "semantic"` is **TF-IDF**. `semantic-embedding` and `embedding-semantic` are the embeddings opt-in and require a provider. Unknown matching types fail with a clear error (register a custom metric instead of relying on exact fallback).
 
 ## Release notes
+
+**3.3.0** — README leads with the evaluation problem. Opt-in `SemanticEmbedding` / `semantic-embedding` (TF-IDF `semantic` unchanged). A missing embedding provider throws `LLMEvalConfigurationException` instead of scoring 0. NuGet package icon.
 
 **3.2.1** — Dependency refresh (Microsoft.Extensions 10.0.12, Semantic Kernel 1.80.1, test SDK) and README alignment. No API breaks vs 3.2.0.
 

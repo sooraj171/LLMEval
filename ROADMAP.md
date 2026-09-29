@@ -256,6 +256,8 @@ Living roadmap for release-aligned phases. Agents: when the user says **implemen
 
 Phases 1–6 are **complete**. Further work is demand-driven (new providers, Aspire/Playwright/MCP, companion samples). Open a GitHub Discussion or Issue before large scope.
 
+**v3.3.0** (not a numbered phase): problem-first README, opt-in `semantic-embedding` that throws `LLMEvalConfigurationException` when unconfigured (TF-IDF `semantic` unchanged), NuGet icon, public sample [sooraj171/LLMEval.Sample](https://github.com/sooraj171/LLMEval.Sample). Tag when publishing: `v3.3.0`
+
 ---
 
 ## Standing rules (all phases)

@@ -19,7 +19,7 @@ When the user says **implement phase N**, **do phase N**, **ship phase N**, or *
 
 | Field | Value |
 |-------|--------|
-| Current shipped | **v3.2.1** (Phase 6 + dependency refresh) |
+| Current shipped | **v3.3.0** (maintenance: embeddings opt-in, README, icon, sample repo) |
 | Next to implement | **Maintenance** (demand-driven; no planned phase) |
 | After | New phases only if added to ROADMAP.md |
 

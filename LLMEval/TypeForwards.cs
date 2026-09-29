@@ -2,6 +2,8 @@ using System.Runtime.CompilerServices;
 using LLMEval;
 
 [assembly: TypeForwardedTo(typeof(ProviderType))]
+[assembly: TypeForwardedTo(typeof(EmbeddingProviderType))]
+[assembly: TypeForwardedTo(typeof(LLMEvalConfigurationException))]
 [assembly: TypeForwardedTo(typeof(EvaluationType))]
 [assembly: TypeForwardedTo(typeof(EvaluationRequest))]
 [assembly: TypeForwardedTo(typeof(EvaluationResult))]

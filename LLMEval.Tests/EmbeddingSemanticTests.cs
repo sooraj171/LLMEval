@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using LLMEval;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LLMEval.Tests;
 
@@ -14,7 +15,10 @@ public class EmbeddingSemanticTests
     {
         var registry = MetricRegistry.CreateDefault();
         Assert.True(registry.TryGet("embedding-semantic", out var metric));
+        Assert.True(registry.TryGet("semantic-embedding", out var alias));
+        Assert.Same(metric, alias);
         Assert.IsType<EmbeddingSemanticMetric>(metric);
+        Assert.False(registry.TryGet("embedding", out _));
     }
 
     [Fact]
@@ -64,16 +68,108 @@ public class EmbeddingSemanticTests
     }
 
     [Fact]
-    public async Task EmbeddingMetric_WithoutProviderOrApiKey_FailsClearly()
+    public async Task Semantic_TfIdf_DoesNotThrowWhenUnconfigured()
     {
         var result = await Eval.Direct()
-            .EmbeddingSemantic("hello", "hello")
-            .WithThreshold(0.8)
+            .Semantic("hello", "hello")
+            .WithThreshold(0)
             .EvaluateAsync();
 
+        Assert.Equal("semantic", result.MetricName);
+        Assert.Contains("TF-IDF", result.Details, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task SemanticEmbedding_WithoutProviderOrApiKey_Throws()
+    {
+        var ex = await Assert.ThrowsAsync<LLMEvalConfigurationException>(() =>
+            Eval.Direct()
+                .SemanticEmbedding("hello", "hello")
+                .WithProvider(EmbeddingProviderType.OpenAI)
+                .WithThreshold(0.85)
+                .EvaluateAsync());
+
+        Assert.Contains("WithProvider", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("WithApiKey", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("AddSingleton<IEmbeddingProvider", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task EmbeddingSemantic_WithoutProviderOrApiKey_Throws()
+    {
+        var ex = await Assert.ThrowsAsync<LLMEvalConfigurationException>(() =>
+            Eval.Direct()
+                .EmbeddingSemantic("hello", "hello")
+                .WithThreshold(0.8)
+                .EvaluateAsync());
+
+        Assert.Equal(EmbeddingSemanticMetric.MissingProviderMessage, ex.Message);
+    }
+
+    [Fact]
+    public async Task SemanticEmbedding_ViaService_UsesRegisteredProvider()
+    {
+        var similar = new float[] { 1f, 0f };
+        var registry = MetricRegistry.CreateDefault();
+        registry.Register(new EmbeddingSemanticMetric(new StubEmbeddingProvider(_ => new[] { similar, similar })));
+
+        var service = new AdvancedEvaluationService(new AiProviderFactory(), new HttpClient(), null, registry);
+        var result = await service.EvaluateAsync(new EvaluationRequest
+        {
+            AiResponse = ParaphraseActual,
+            GoldenOutput = ParaphraseExpected,
+            EvaluationType = EvaluationType.DirectEvaluation,
+            MatchingType = "semantic-embedding",
+            PassThreshold = 0.85
+        });
+
+        result.ShouldPass();
+        Assert.Equal("semantic-embedding", result.MetricName);
+    }
+
+    [Fact]
+    public async Task AddLLMEval_UsesRegisteredEmbeddingProvider()
+    {
+        var similar = new float[] { 0.2f, 0.8f };
+        var services = new ServiceCollection();
+        services.AddSingleton<IEmbeddingProvider>(new StubEmbeddingProvider(_ => new[] { similar, similar }));
+        services.AddLLMEval();
+
+        using var provider = services.BuildServiceProvider();
+        var eval = provider.GetRequiredService<IEvaluationService>();
+        var result = await eval.EvaluateAsync(new EvaluationRequest
+        {
+            AiResponse = "hello",
+            GoldenOutput = "hello",
+            EvaluationType = EvaluationType.DirectEvaluation,
+            MatchingType = EmbeddingSemanticMetric.AliasName,
+            PassThreshold = 0.85
+        });
+
+        result.ShouldPass();
+        Assert.Equal("semantic-embedding", result.MetricName);
+    }
+
+    [Fact]
+    public async Task EmbeddingHttpFailure_ReturnsFailedResult()
+    {
+        var handler = new StubHttpHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+            {
+                Content = new StringContent("unauthorized", Encoding.UTF8, "application/json")
+            }));
+        using var http = new HttpClient(handler);
+        var metric = new EmbeddingSemanticMetric(http);
+        var result = await metric.EvaluateAsync(new MetricContext
+        {
+            Actual = "a",
+            Expected = "b",
+            PassThreshold = 0.5,
+            Configuration = new Dictionary<string, string> { ["ApiKey"] = "sk-test" }
+        });
+
         Assert.False(result.IsPassed);
-        Assert.Equal("embedding-semantic", result.MetricName);
-        Assert.Contains("ApiKey", result.Details, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("401", result.Details, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -32,4 +32,4 @@ No separate Aspire package in v3. Use configuration binding:
 services.AddLLMEval(builder.Configuration); // binds section "LLMEval"
 ```
 
-Playwright / MCP remain out of scope until requested (see ROADMAP). Current package version: **3.2.1**.
+Playwright / MCP remain out of scope until requested (see ROADMAP). Current package version: **3.3.0**.

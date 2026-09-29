@@ -4,6 +4,31 @@ All notable changes to **STAF.LLMEval** (NuGet: [STAF.LLMEval](https://www.nuget
 
 STAF.LLMEval is a .NET LLM evaluation / AI testing framework for AI response evaluation, LLM-as-judge scoring, RAG grounding, and hallucination detection.
 
+## [3.3.0] - 2026-09-29
+
+### Summary
+
+The GitHub and NuGet READMEs now open with why string-equality tests fail on LLM output. Embedding similarity is an explicit opt-in that fails the build when no provider is configured. TF-IDF `semantic` scores are unchanged. Packages ship a NuGet icon. Public sample [sooraj171/LLMEval.Sample](https://github.com/sooraj171/LLMEval.Sample) references `STAF.LLMEval` **2.2.0** (the latest NuGet release that restores; published 3.x packages depend on `STAF.LLMEval.Core`, which is not on nuget.org yet).
+
+### Added
+
+- `Eval.Direct().SemanticEmbedding(...)` and `MatchingType = semantic-embedding` (same metric as `embedding-semantic`)
+- `EmbeddingProviderType` and `WithProvider(EmbeddingProviderType)` for OpenAI and Azure OpenAI embeddings
+- `LLMEvalConfigurationException` when `semantic-embedding` / `embedding-semantic` has no `IEmbeddingProvider` and no API key
+- `AddLLMEval` uses a registered `IEmbeddingProvider` for that metric
+- NuGet `PackageIcon` on meta, Core, Abstractions, and SemanticKernel
+
+### Changed
+
+- A missing embedding provider **throws** instead of returning score 0. TF-IDF `MatchingType = semantic` is unchanged and still needs no key
+- READMEs lead with the problem statement, then install
+
+### Migration from 3.2.1
+
+- Call sites that used `embedding-semantic` without an API key and asserted a failed score of 0 now get `LLMEvalConfigurationException`. Configure `WithProvider` / `WithApiKey`, or `services.AddSingleton<IEmbeddingProvider, T>()`
+- `semantic` thresholds and baselines do not need to move
+- `Eval.Direct().EmbeddingSemantic(...)` still works
+
 ## [3.2.1] - 2026-09-28
 
 ### Summary

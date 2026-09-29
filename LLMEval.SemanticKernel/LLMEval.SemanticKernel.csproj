@@ -11,14 +11,14 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
 
     <PackageId>STAF.LLMEval.SemanticKernel</PackageId>
-    <Version>3.2.1</Version>
+    <Version>3.3.0</Version>
     <Title>STAF.LLMEval.SemanticKernel — Semantic Kernel integration</Title>
     <Authors>Sooraj Ramachandran</Authors>
     <Company>Sooraj Ramachandran</Company>
     <Product>STAF.LLMEval</Product>
     <Description>Semantic Kernel integration for STAF.LLMEval: IAiProvider adapter over IChatCompletionService / Kernel for LLM-as-judge and grounding evaluations.</Description>
     <PackageTags>LLM;LLM-evaluation;Semantic-Kernel;AI-testing;AI-evaluation;dotnet;net8;net9;net10;STAF</PackageTags>
-    <PackageReleaseNotes>STAF.LLMEval.SemanticKernel 3.2.1 — Microsoft.SemanticKernel.Abstractions 1.80.1 (aligned with STAF.LLMEval 3.2.1). See CHANGELOG.md.</PackageReleaseNotes>
+    <PackageReleaseNotes>STAF.LLMEval.SemanticKernel 3.3.0 — Version aligned with STAF.LLMEval 3.3.0. Package icon. See CHANGELOG.md.</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/sooraj171/LLMEval</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/sooraj171/LLMEval</PackageProjectUrl>
@@ -26,6 +26,7 @@
     <Copyright>Copyright © Sooraj Ramachandran 2026</Copyright>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
@@ -34,6 +35,7 @@
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="README.md" />
+    <None Include="..\assets\icon.png" Pack="true" PackagePath="icon.png" />
   </ItemGroup>
 
   <ItemGroup>

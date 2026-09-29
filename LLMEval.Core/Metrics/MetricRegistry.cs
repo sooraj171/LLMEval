@@ -23,7 +23,14 @@ public sealed class MetricRegistry
         ArgumentNullException.ThrowIfNull(metric);
         if (string.IsNullOrWhiteSpace(metric.Name))
             throw new ArgumentException("Metric name is required.", nameof(metric));
-        _metrics[metric.Name.Trim()] = metric;
+        var name = metric.Name.Trim();
+        _metrics[name] = metric;
+        if (EmbeddingSemanticMetric.IsEmbeddingMetricName(name))
+        {
+            _metrics[EmbeddingSemanticMetric.CanonicalName] = metric;
+            _metrics[EmbeddingSemanticMetric.AliasName] = metric;
+        }
+
         return this;
     }
 

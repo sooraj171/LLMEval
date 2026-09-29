@@ -25,6 +25,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(sp =>
         {
             var registry = MetricRegistry.CreateDefault();
+            var embeddingProvider = sp.GetService<IEmbeddingProvider>();
+            if (embeddingProvider != null)
+                registry.Register(new EmbeddingSemanticMetric(embeddingProvider));
             foreach (var metric in sp.GetServices<IEvaluationMetric>())
                 registry.Register(metric);
             configureMetrics?.Invoke(registry);

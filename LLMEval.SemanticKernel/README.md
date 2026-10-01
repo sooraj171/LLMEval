@@ -1,6 +1,6 @@
 # STAF.LLMEval.SemanticKernel
 
-Optional [Semantic Kernel](https://github.com/microsoft/semantic-kernel) integration for **STAF.LLMEval** **3.3.0** (depends on `Microsoft.SemanticKernel.Abstractions` 1.80.1).
+Optional [Semantic Kernel](https://github.com/microsoft/semantic-kernel) integration for **STAF.LLMEval** **3.3.1** (depends on `STAF.LLMEval` and `Microsoft.SemanticKernel.Abstractions` 1.80.1).
 
 ```bash
 dotnet add package STAF.LLMEval

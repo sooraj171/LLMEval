@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LLMEval.Core\LLMEval.Core.csproj" />
     <ProjectReference Include="..\LLMEval\LLMEval.csproj" />
     <ProjectReference Include="..\LLMEval.SemanticKernel\LLMEval.SemanticKernel.csproj" />
   </ItemGroup>

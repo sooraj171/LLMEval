@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LLMEval.Core\LLMEval.Core.csproj" />
     <ProjectReference Include="..\LLMEval\LLMEval.csproj" />
   </ItemGroup>
 

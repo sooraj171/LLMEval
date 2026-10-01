@@ -1,6 +1,6 @@
 # CI templates for STAF.LLMEval
 
-Official pipeline samples (shipped with v2.2+, still current in **3.3.0**) that:
+Official pipeline samples (shipped with v2.2+, still current in **3.3.1**) that:
 
 1. Run evaluation tests (xUnit sample by default)
 2. Fail the job when assertions / `ShouldMeetPassRate` fail

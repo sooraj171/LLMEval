@@ -11,14 +11,14 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
 
     <PackageId>STAF.LLMEval.Core</PackageId>
-    <Version>3.3.0</Version>
+    <Version>3.3.1</Version>
     <Title>STAF.LLMEval.Core — LLM evaluation engine</Title>
     <Authors>Sooraj Ramachandran</Authors>
     <Company>Sooraj Ramachandran</Company>
     <Product>STAF.LLMEval</Product>
-    <Description>Core evaluation engine for STAF.LLMEval: fluent Eval API, metrics (including TF-IDF and embeddings semantic similarity), suite/reports with opt-in run history, assertions, and providers (OpenAI, Azure OpenAI, Gemini, Ollama, Claude, Groq, Mistral). Prefer the STAF.LLMEval meta-package for one-line install.</Description>
+    <Description>Core evaluation engine for STAF.LLMEval: fluent Eval API, metrics (including TF-IDF and embeddings semantic similarity), suite/reports with opt-in run history, assertions, and providers (OpenAI, Azure OpenAI, Gemini, Ollama, Claude, Groq, Mistral). These assemblies also ship inside the STAF.LLMEval package. Prefer that package for one-line install.</Description>
     <PackageTags>LLM;LLM-evaluation;LLM-as-judge;AI-testing;AI-evaluation;RAG;Claude;Groq;Mistral;OpenAI;Gemini;Ollama;embeddings;BenchmarkDotNet;dotnet;net8;net9;net10;STAF</PackageTags>
-    <PackageReleaseNotes>STAF.LLMEval.Core 3.3.0 — SemanticEmbedding opt-in; missing provider throws LLMEvalConfigurationException. TF-IDF semantic unchanged. See CHANGELOG.md.</PackageReleaseNotes>
+    <PackageReleaseNotes>STAF.LLMEval.Core 3.3.1 — Version aligned with STAF.LLMEval 3.3.1. The same assemblies ship inside STAF.LLMEval. See CHANGELOG.md.</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/sooraj171/LLMEval</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/sooraj171/LLMEval</PackageProjectUrl>

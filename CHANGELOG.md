@@ -4,6 +4,23 @@ All notable changes to **STAF.LLMEval** (NuGet: [STAF.LLMEval](https://www.nuget
 
 STAF.LLMEval is a .NET LLM evaluation / AI testing framework for AI response evaluation, LLM-as-judge scoring, RAG grounding, and hallucination detection.
 
+## [3.3.1] - 2026-10-01
+
+### Summary
+
+`STAF.LLMEval` 3.3.1 is the only package a consumer needs. `LLMEval.Core.dll` and `LLMEval.Abstractions.dll` are inside that nupkg. NuGet does not require separate `STAF.LLMEval.Core` or `STAF.LLMEval.Abstractions` uploads for the one-line install.
+
+### Changed
+
+- Package version **3.3.1** (meta, Core, Abstractions, SemanticKernel)
+- `STAF.LLMEval` no longer depends on the `STAF.LLMEval.Core` package. It carries the assemblies itself
+- Optional `STAF.LLMEval.SemanticKernel` depends on `STAF.LLMEval` 3.3.1
+
+### Migration from 3.3.0
+
+- If 3.3.0 was not published, upload `STAF.LLMEval.3.3.1.nupkg` only
+- Apps keep `dotnet add package STAF.LLMEval`. No API changes vs 3.3.0
+
 ## [3.3.0] - 2026-09-29
 
 ### Summary

@@ -6,4 +6,4 @@ Clone the repo and run — **no API keys, no extra setup**:
 dotnet test samples/QuickStart/QuickStart.csproj
 ```
 
-Uses only `Eval.Direct()` matchers (`Exact`, `Keyword`, `Json`) — STAF.LLMEval **3.3.0**, no API keys. For suites, traits, and baseline CI checks see [`samples/MinimalXunit`](../MinimalXunit). For embeddings vs TF-IDF see the [root README](../../README.md). For a live LLM-as-judge example see [`samples/OpenAIJudge`](../OpenAIJudge). For a repo that depends on the published NuGet package, see [LLMEval.Sample](https://github.com/sooraj171/LLMEval.Sample).
+Uses only `Eval.Direct()` matchers (`Exact`, `Keyword`, `Json`) — STAF.LLMEval **3.3.1**, no API keys. For suites, traits, and baseline CI checks see [`samples/MinimalXunit`](../MinimalXunit). For embeddings vs TF-IDF see the [root README](../../README.md). For a live LLM-as-judge example see [`samples/OpenAIJudge`](../OpenAIJudge). For a repo that depends on the published NuGet package, see [LLMEval.Sample](https://github.com/sooraj171/LLMEval.Sample).

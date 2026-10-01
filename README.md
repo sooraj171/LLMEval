@@ -1,6 +1,6 @@
 # STAF.LLMEval
 
-[![NuGet](https://img.shields.io/badge/NuGet-v3.3.0-0B3D91?logo=nuget&logoColor=white)](https://www.nuget.org/packages/STAF.LLMEval)
+[![NuGet](https://img.shields.io/badge/NuGet-v3.3.1-0B3D91?logo=nuget&logoColor=white)](https://www.nuget.org/packages/STAF.LLMEval)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/STAF.LLMEval.svg)](https://www.nuget.org/packages/STAF.LLMEval)
 [![Build](https://github.com/sooraj171/LLMEval/actions/workflows/ci.yml/badge.svg)](https://github.com/sooraj171/LLMEval/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
@@ -17,6 +17,8 @@ No API keys. Copy into an xUnit test (or run `dotnet test samples/QuickStart/Qui
 ```bash
 dotnet add package STAF.LLMEval
 ```
+
+That one package contains the evaluation assemblies. You do not add `STAF.LLMEval.Core` or `STAF.LLMEval.Abstractions`.
 
 ```csharp
 using LLMEval;
@@ -191,7 +193,7 @@ Optional cost estimate: `Configuration["InputCostPer1M"]` / `OutputCostPer1M` (U
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Build, test, add a metric or provider, PR checklist |
 | [`docs/BEST-PRACTICES.md`](docs/BEST-PRACTICES.md) | Eval / CI best practices |
 | [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) | Cost model, parallelism, benchmarks |
-| [`docs/PACKAGES.md`](docs/PACKAGES.md) | Meta / Core / Abstractions / SK |
+| [`docs/PACKAGES.md`](docs/PACKAGES.md) | One install package, plus optional Core / Abstractions / SK |
 | [`docs/MIGRATION-v3.md`](docs/MIGRATION-v3.md) | Upgrade guide from 2.x → 3.x |
 | [`benchmarks/LLMEval.Benchmarks`](benchmarks/LLMEval.Benchmarks) | BenchmarkDotNet hot-path suite |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release notes |
@@ -204,6 +206,8 @@ v3 keeps `IEvaluationService.EvaluateAsync` / `EvaluationRequest` (rebuild requi
 `EvaluationRequest.ModelName` maps to `Configuration["Model"]` when Model is unset. `MatchingType = "semantic"` is **TF-IDF**. `semantic-embedding` and `embedding-semantic` are the embeddings opt-in and require a provider. Unknown matching types fail with a clear error (register a custom metric instead of relying on exact fallback).
 
 ## Release notes
+
+**3.3.1** — `STAF.LLMEval` contains `LLMEval.dll`, `LLMEval.Core.dll`, and `LLMEval.Abstractions.dll`. One install. No separate Core or Abstractions package.
 
 **3.3.0** — README leads with the evaluation problem. Opt-in `SemanticEmbedding` / `semantic-embedding` (TF-IDF `semantic` unchanged). A missing embedding provider throws `LLMEvalConfigurationException` instead of scoring 0. NuGet package icon.
 

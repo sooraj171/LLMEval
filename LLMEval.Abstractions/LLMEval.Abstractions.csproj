@@ -11,14 +11,14 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
 
     <PackageId>STAF.LLMEval.Abstractions</PackageId>
-    <Version>3.3.0</Version>
+    <Version>3.3.1</Version>
     <Title>STAF.LLMEval.Abstractions — LLM evaluation contracts</Title>
     <Authors>Sooraj Ramachandran</Authors>
     <Company>Sooraj Ramachandran</Company>
     <Product>STAF.LLMEval</Product>
-    <Description>Abstractions and DTOs for STAF.LLMEval: IEvaluationService, IAiProvider, IEmbeddingProvider, EvaluationRequest/Result, metrics contracts, and options (including opt-in run history). Prefer the STAF.LLMEval meta-package for one-line install.</Description>
+    <Description>Abstractions and DTOs for STAF.LLMEval: IEvaluationService, IAiProvider, IEmbeddingProvider, EvaluationRequest/Result, metrics contracts, and options (including opt-in run history). These assemblies also ship inside the STAF.LLMEval package. Prefer that package for one-line install.</Description>
     <PackageTags>LLM;LLM-evaluation;AI-testing;AI-evaluation;abstractions;embeddings;dotnet;net8;net9;net10;STAF</PackageTags>
-    <PackageReleaseNotes>STAF.LLMEval.Abstractions 3.3.0 — EmbeddingProviderType and LLMEvalConfigurationException. See CHANGELOG.md.</PackageReleaseNotes>
+    <PackageReleaseNotes>STAF.LLMEval.Abstractions 3.3.1 — Version aligned with STAF.LLMEval 3.3.1. The same assemblies ship inside STAF.LLMEval. See CHANGELOG.md.</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/sooraj171/LLMEval</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/sooraj171/LLMEval</PackageProjectUrl>

@@ -2,7 +2,9 @@
 
 Testing non-deterministic LLM output with brittle string-equality asserts does not scale. STAF.LLMEval gives you pluggable metrics, LLM-as-judge, and RAG groundedness checks that run in CI.
 
-**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 3.3.0 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
+**Package:** [STAF.LLMEval](https://www.nuget.org/packages/STAF.LLMEval) · **Version:** 3.3.1 · **Targets:** `net8.0`, `net9.0`, `net10.0` · **License:** MIT
+
+This package contains the evaluation assemblies (`LLMEval.dll`, `LLMEval.Core.dll`, `LLMEval.Abstractions.dll`). Install it alone.
 
 Score outputs with **pluggable metrics** (exact, keyword, TF-IDF or **embeddings** semantic similarity, JSON/schema, relevance, heuristic grounding), **LLM-as-judge**, and **RAG grounding / hallucination detection**. Includes a fluent `Eval` API, test assertions, Options/DI, JSON/JSONL/CSV evaluation suites, golden baseline comparison, opt-in run-history HTML trends, and HTML/JSON/Markdown/CSV reports. Works with ChatGPT, GPT, Gemini, Ollama, Azure OpenAI, Claude, Groq, and Mistral.
 
@@ -283,6 +285,11 @@ Zero-key sample: repo `samples/QuickStart`. Live judge sample: `samples/OpenAIJu
 Optional: `STAF.LLMEval.SemanticKernel` — `AddLLMEvalSemanticKernel()` uses Kernel chat completion for judge/grounding.
 
 ASP.NET / host config: `services.AddLLMEval(configuration)` binds the `LLMEval` section.
+
+## Release notes — 3.3.1
+
+- `STAF.LLMEval` contains the Core and Abstractions assemblies. `dotnet add package STAF.LLMEval` is the only install
+- Optional Semantic Kernel package depends on `STAF.LLMEval` 3.3.1
 
 ## Release notes — 3.3.0
 
